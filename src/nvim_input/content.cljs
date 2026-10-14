@@ -14,9 +14,39 @@
     (when (not= value (.getPropertyValue style property))
       (.setProperty style property value "important"))))
 
+(defn ensure-minimum-height! [element]
+  (when-let [minimum (:minimum-height (get @*editors element))]
+    (let [root-size (js/parseFloat (.-fontSize (.getComputedStyle js/window (.-documentElement js/document))))
+          grow! (fn [target]
+                  (let [style (.getComputedStyle js/window target)
+                        edges (if (= "border-box" (.-boxSizing style)) 0
+                                  (reduce + (map #(js/parseFloat (.getPropertyValue style %))
+                                              ["padding-top" "padding-bottom" "border-top-width" "border-bottom-width"])))
+                        height (max 0 (- minimum edges))
+                        value (str (/ (js/Math.round (* 10000 (/ height root-size))) 10000) "rem")]
+                    (when-not (get-in @*editors [element :layout-styles target])
+                      (swap! *editors assoc-in [element :layout-styles target]
+                        (into {} (map (fn [property]
+                                        [property [(.getPropertyValue (.-style target) property)
+                                                   (.getPropertyPriority (.-style target) property)]])
+                                      ["min-height" "max-height"]))))
+                    (when (or (not (js/Number.isFinite (js/parseFloat (.-minHeight style))))
+                              (< (js/parseFloat (.-minHeight style)) height))
+                      (style! target "min-height" value))
+                    (when (< (js/parseFloat (.-maxHeight style)) height) (style! target "max-height" value))))
+          parent (.-parentElement element)]
+      (grow! element)
+      ;; Absolute fields often use a hidden sizing sibling. Grow their containing
+      ;; row too so the extra editing lines cannot cover the following controls.
+      (when (and (= "absolute" (.-position (.getComputedStyle js/window element)))
+                 (identical? parent (.-offsetParent element))
+                 (< (.-clientHeight parent) minimum))
+        (grow! parent)))))
+
 (defn size-editor! [element host]
   ;; Keep the native control in its site's layout. In particular, an absolute
   ;; textarea may already have a hidden sizing sibling in a flex container.
+  (ensure-minimum-height! element)
   (let [rect (.getBoundingClientRect element)
         parent (.-offsetParent host)
         initial? (or (nil? parent)
@@ -53,10 +83,15 @@
       (str (.-protocol url) "//" (.-host url)))))
 
 (defn restore! [element]
-  (when-let [{:keys [host native-styles original-tabindex sync]} (get @*editors element)]
+  (when-let [{:keys [host native-styles original-tabindex sync layout-styles]} (get @*editors element)]
     (swap! *editors dissoc element)
     (when sync ((:stop! sync)))
     (.remove host)
+    (doseq [[target properties] layout-styles]
+      (doseq [[property [value priority]] properties]
+        (if (empty? value) (.removeProperty (.-style target) property)
+            (.setProperty (.-style target) property value priority)))
+      (when (empty? (.getAttribute target "style")) (.removeAttribute target "style")))
     (when native-styles
       (doseq [[key [value priority]] native-styles]
         (if (empty? value) (.removeProperty (.-style element) key)
@@ -112,6 +147,9 @@
                                                  :label label :rows (max 8 (min 30 (.-rows element)))
                                                  :maxLength (.-maxLength element)})
                            "ready" (do (reset! *ready? true)
+                                       (when (and (js/Number.isFinite (.-minimumHeight message))
+                                                  (< 0 (.-minimumHeight message) 4096))
+                                         (swap! *editors update element assoc :minimum-height (.-minimumHeight message)))
                                        (js/clearTimeout timeout)
                                        (pull!)
                                        (hide-native! element)

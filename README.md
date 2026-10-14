@@ -16,11 +16,16 @@ worker host and verification of the current Neovim WASM binary.
 Build, open `chrome://extensions`, enable Developer mode, choose **Load unpacked**,
 and select `dist/chrome` from this repository. Focus an ordinary textarea to start
 its editor. The textarea stays usable during startup; Neovim then takes its place.
-Use **Use regular textarea** to restore that control for the remainder of the visit.
+Hover the editor to reveal restart and regular-textarea icons on its right edge.
+Their descriptions appear on hover; both controls are also keyboard accessible.
+The regular-textarea icon restores that control for the remainder of the visit.
 
 The inline editor frame isolates Neovim's keys from the site's keyboard handlers
 and extensions such as Vimium. The original textarea remains the form control:
 its measured width, height and position are retained as the page layout changes;
+short fields grow to fit at least six editing lines, plus Neovim's status and
+command lines. The extra title row and bottom control rows are absent. Switching
+back restores the original minimum/maximum height and surrounding sizing row;
 its name, native form ownership, validation and default value are retained. Buffer
 edits emit native input events; leaving the editor emits change. Application
 writes and resets update the buffer, and submit waits for a final synchronization.

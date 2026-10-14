@@ -17,6 +17,7 @@
    [:?cols [:int {:min 20, :max 240}]]
    [:?rows [:int {:min 8, :max 80}]]
    [:?fit-height? boolean?]
+   [:?hide-toolbar? boolean?]
    [:?on-save fn?]
    [:?on-write fn?]])
 
@@ -188,7 +189,8 @@
                                          (mouse! event "wheel" action)))))}))))))
        [status (:mouse? grid)])
       [:div.neovim
-       [:div.neovim__toolbar
+       (when-not (:hide-toolbar? options)
+        [:div.neovim__toolbar
         [:span {:role "status", :aria-live "polite"} (if (= :ready status) (:mode grid) message)]
         (when (and on-save (not source-document))
           [:button {:disabled (not= :ready status)
@@ -199,7 +201,7 @@
                                                (when (identical? session @*session)
                                                  (on-save (string/join "\n" (js->clj lines))))))
                                       (.catch #(when (identical? session @*session) (command-error! %))))))}
-           "Use buffer"])]
+           "Use buffer"])])
        (when-let [message (:command-error @*view)]
          [:p.neovim__command-error {:role "alert"}
           message " "
@@ -305,4 +307,8 @@
   (let [*generation (hooks/use-memo #(r/atom 0) [])]
   [:div.neovim-container
    ^{:key @*generation} [<session> options]
-   [:button {:on-click #(swap! *generation inc)} "Restart editor"]]))
+   [:button.neovim__action.neovim__restart
+    {:type "button" :aria-label "Restart editor" :title "Restart editor"
+     :on-click #(swap! *generation inc)}
+    [:svg {:view-box "0 0 24 24" :aria-hidden true}
+     [:path {:d "M20 7v5h-5M20 12a8 8 0 1 0-2 5M20 7l-3-3"}]]]]))

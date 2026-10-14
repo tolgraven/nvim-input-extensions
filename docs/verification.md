@@ -1,5 +1,35 @@
 # Verification
 
+## Version 0.1.2 follow-up
+
+All five release targets, the unit target and the real-WASM fixture compiled
+without warnings through the required 1.5-CPU Docker launcher. Four CLJS tests /
+23 assertions, transport checks, artifact checks and Chrome packaging passed.
+
+The installed 0.1.2 extension was checked in an actual Chrome Incognito window,
+with only Neovim Input in the extension toolbar, at `/native.html?short` on the
+IPv6 fixture host. Both fields initially had a three-rem height cap:
+
+- The ordinary field grew to matching native/frame bounds of 966 × 154; the
+  absolute flex field grew to matching 768 × 154 bounds. Both displayed six
+  editing lines plus the native status and command lines. The absolute field's
+  sizing row reserved the extra height, keeping following controls clear.
+- The external mode title and bottom button rows were absent. Restart and
+  regular-textarea controls appeared as icons over the right edge and disappeared
+  when the pointer left the editor. Both have accessible names and hover titles.
+- Editing updated the actual textarea. Restart through its icon retained that
+  text. Restoring each native control through its icon passed exact style checks
+  for the original min/max-height constraints and the containing sizing row.
+
+The standalone real-WASM short-field check passed in private Chrome for both
+ordinary and absolute flex fields: at least eight fitted native rows, matching
+bounds, no extra title, labelled absolutely positioned controls and exact height
+restoration. An earlier normal-window run passed the ordinary field but its
+second editor timed out, consistent with the startup timeouts recorded below.
+
+Chrome's extension manager showed 0.1.2 enabled, loaded from this checkout's
+`dist/chrome`, with Allow in Incognito on. It was left installed for user testing.
+
 ## Version 0.1.1 follow-up
 
 The release targets and fixture compiled without warnings through the required

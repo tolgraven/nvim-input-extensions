@@ -112,3 +112,38 @@ document.querySelector('#run-checks').addEventListener('click', async () => {
   try {output.textContent=(await window.runIntegrationChecks()).join('\n');}
   catch(error) {output.textContent='FAIL: '+error.message;}
 });
+
+document.querySelector('#run-layout-checks').addEventListener('click',async()=>{
+  const output=document.querySelector('#layout-results'),checks=[];
+  const wait=async(predicate,label)=>{
+    for(let i=0;i<1500;i++){if(predicate())return;await new Promise(resolve=>setTimeout(resolve,20));}
+    throw Error('Timed out: '+label);
+  };
+  output.textContent='Running…';
+  try {
+    document.querySelector('#sizing pre').style.height='3rem';
+    for(const id of ['plain','flex-sized']) {
+      const field=document.getElementById(id),parent=field.parentElement;
+      Object.assign(field.style,{height:'3rem',minHeight:'0',maxHeight:'3rem'});
+      const originals=[field.style.cssText,parent.style.cssText];
+      field.focus();
+      await wait(()=>field.getAttribute('tabindex')==='-1',id+' startup');
+      const frame=field.nextElementSibling,doc=frame.contentDocument;
+      const grid=doc.querySelector('.neovim__grid'),viewport=doc.querySelector('.neovim__viewport');
+      await wait(()=>grid.children.length>=8 && grid.getBoundingClientRect().height<=viewport.clientHeight+1,id+' eight fitted rows');
+      const native=field.getBoundingClientRect(),bounds=frame.getBoundingClientRect();
+      if(!['x','y','width','height'].every(key=>Math.abs(native[key]-bounds[key])<1))throw Error(id+' mismatched bounds');
+      if(doc.querySelector('.neovim__toolbar'))throw Error('Extra mode title remains');
+      for(const label of ['Restart editor','Use regular textarea']) {
+        const button=doc.querySelector(`button[aria-label="${label}"]`);
+        if(button?.title!==label || doc.defaultView.getComputedStyle(button).position!=='absolute')throw Error(label+' is not a labelled floating icon');
+      }
+      if(id==='flex-sized' && parent.getBoundingClientRect().height<native.height-1)throw Error('Absolute field did not reserve page space');
+      doc.querySelector('.neovim__restore').click();
+      await wait(()=>!field.nextElementSibling?.matches('iframe'),id+' restore');
+      if(field.style.cssText!==originals[0] || parent.style.cssText!==originals[1])throw Error(id+' did not restore height constraints');
+      checks.push(`${id}: PASS — eight fitted native rows, matching bounds, no title, floating icons, original height constraints restored`);
+      output.textContent=checks.join('\n');
+    }
+  } catch(error){output.textContent=checks.join('\n')+'\nFAIL: '+error.message;}
+});

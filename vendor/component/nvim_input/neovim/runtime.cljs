@@ -106,8 +106,10 @@
   (let [cell-width (.-width (.getBoundingClientRect probe))]
     (max 20 (min 240 (js/Math.floor (/ (.-clientWidth element) cell-width))))))
 
+(def min-fit-rows 8) ; Six editing lines, plus the native status and command lines.
+
 (defn resize! [session element probe rows]
-  (let [rows (or rows (max 1 (js/Math.floor (/ (.-clientHeight element)
+  (let [rows (or rows (max min-fit-rows (js/Math.floor (/ (.-clientHeight element)
                                               (.-height (.getBoundingClientRect probe))))))]
     (request! session "nvim_ui_try_resize" [(column-count element probe) rows])))
 

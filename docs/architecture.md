@@ -12,8 +12,13 @@ frame is absolutely positioned over its border box, with ResizeObserver and
 reconciliation following site layout changes. This also handles an absolute
 textarea backed by a hidden sizing element in a flex row, as on Stack Overflow.
 The extension's fit-height component option sizes native Neovim rows to the
-remaining viewport height; the frame never expands the original field to fit its
-own content. This is an extension adaptation to retain during upstream refreshes.
+remaining viewport height. Short fields get a measured minimum of eight native
+rows: six editing lines, a status line and a command line. The retained textarea
+and, for absolute fields, its containing sizing row reserve that space in page
+layout. Original height constraints are restored on unmount. The extra Reagent
+mode toolbar is hidden; restart and restore are accessible icons floating over
+the right edge on hover, consuming no grid rows. These are extension adaptations
+to retain during upstream refreshes.
 
 The content adapter and frame are ClojureScript, with Reagent 2 / React 19 for the component and
 options UI. Local ratoms project the Neovim redraw state. No re-frame is needed.

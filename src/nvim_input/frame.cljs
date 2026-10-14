@@ -20,7 +20,20 @@
 (defc <editor> [options]
   [:div.inline-editor
    [views/<editor> options]
-   [:button {:type "button" :on-click #(send! #js {:op "bypass"})} "Use regular textarea"]])
+   [:button.neovim__action.neovim__restore
+    {:type "button" :aria-label "Use regular textarea" :title "Use regular textarea"
+     :on-click #(send! #js {:op "bypass"})}
+    [:svg {:view-box "0 0 24 24" :aria-hidden true}
+     [:rect {:x 3 :y 4 :width 18 :height 16 :rx 2}]
+     [:path {:d "M7 8h10M7 12h10M7 16h6"}]]]])
+
+(defn minimum-height []
+  (let [probe (.querySelector js/document ".neovim__measure")
+        editor (.querySelector js/document ".neovim")
+        style (.getComputedStyle js/window editor)]
+    (js/Math.ceil (+ (* runtime/min-fit-rows (.-height (.getBoundingClientRect probe)))
+                     (js/parseFloat (.-borderTopWidth style))
+                     (js/parseFloat (.-borderBottomWidth style))))))
 
 (defn initialize! [^js message]
   (when (and (string? (.-value message)) (compare-and-set! *initialized? false true))
@@ -44,7 +57,7 @@
                            (when-let [grid (.querySelector js/document ".neovim__grid")]
                              (.setAttribute grid "aria-label" (str label " — Neovim"))
                              (.focus grid))
-                           (send! #js {:op "ready"})) fail!)))
+                           (send! #js {:op "ready" :minimumHeight (minimum-height)})) fail!)))
                        (.then #(reset! *sync %))
                        (.catch fail!)))]
       (reset! *revision (or (.-revision message) 0))
@@ -53,7 +66,7 @@
       (reset! *dummy dummy)
       (.addEventListener dummy "input" #(send! #js {:op "input" :value (.-value dummy) :revision @*revision}))
       (dom/render (dom/create-root (.getElementById js/document "app"))
-        [<editor> {:initial-text "" :filetype "text" :fit-height? true
+        [<editor> {:initial-text "" :filetype "text" :fit-height? true :hide-toolbar? true
                    :rows (max 8 (min 30 (or (.-rows message) 10)))
                    :on-ready ready!
                    :on-status (fn [status message]
