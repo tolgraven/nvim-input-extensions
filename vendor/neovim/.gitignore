@@ -1,0 +1,2 @@
+# The extension ships a small public placeholder instead of a site's source bundle.
+!workspace.json

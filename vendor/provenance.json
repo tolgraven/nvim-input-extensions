@@ -1,0 +1,30 @@
+{
+  "repository": "https://github.com/tolgraven/tolgrAVen",
+  "branch": "codex/neovim-wasm",
+  "commit": "793eb7e78635680efdd0b8534b836bede5e0b102",
+  "note": "Pinned component and runtime snapshot. Hashes record the original files before the documented extension adaptations.",
+  "files": {
+    "src/frontend/website/modules/neovim/model.cljs": "127724c178018500e0a480eb249d3cd5620bc3a01216bb54ade8e17b2b552c1f",
+    "src/frontend/website/modules/neovim/files.cljs": "5594263d56d6a2c9af5b9c85a5f45fc88121f525dbc0f7ec3722a9354cf66358",
+    "src/frontend/website/modules/neovim/document.cljs": "623053eed4b643bc9e4cf9952cead0db4027105f4578b3b6e70470fe67fdf4dd",
+    "src/frontend/website/modules/neovim/profile.cljs": "f7212dc6d362080f047d055fa725a5080169e6f453f8a596610b52b4c57ce43d",
+    "src/frontend/website/modules/neovim/runtime.cljs": "240157c03fd0c45b01cb955d426ff4b2301b0657ebb332a8e2717bd6d8b1aa4a",
+    "src/frontend/website/modules/neovim/views.cljs": "935511c6f9706d0e7b2d0f15b3ac0629a98c55ad0ae1c07e487e24f5895c1dde",
+    "src/frontend/website/modules/neovim/transport.js": "7de0133ad3d66324860566a76f093942ead5daf555e25a14d823f5d7d4e9af43",
+    "src/frontend/website/modules/neovim/msgpackr.js": "216670eea06cf0a17457e648dea46b20028ee230bd06747c6252eec2a777173d",
+    "resources/public/vendor/neovim/init.lua": "9c81749dada61aa98f125ce42c155112f1d39f24380b332e40a05b1da0e80909",
+    "resources/public/vendor/neovim/nvim.data": "9e6a777567054ccf060b4ce6d4242c567785c1378a5d0128659b9bebe2235917",
+    "resources/public/vendor/neovim/icons.woff2": "b90b55e54160a3095015e03812d83faeef7669a726ca9440a074f58027aec019",
+    "resources/public/vendor/neovim/icons-LICENSE.txt": "d0687bc503762e89d44b5ded3c2c62d2be63fb5199e512c2853cb6e966a3e645",
+    "resources/public/vendor/neovim/.gitignore": "420b4296fe34d66d3ee54d4ee14a2d6caa25442b8ab9ace3f0f62f00dc504417",
+    "resources/public/vendor/neovim/nvim.wasm": "e6ca34e2fc887590cb68b3751ed286479a7b25729db6c5c40edfac4ce1d0bede",
+    "resources/public/vendor/neovim/.gitattributes": "2b95992a808fc7a9975b84a49b8d5d72907b0fb26178f3acd27e79e2ea4fce2c",
+    "resources/public/vendor/neovim/nvim-profile-worker.js": "85afc99d01a9b3c55a09d3fe05f89da9979aeda5288f864208259238221fb65c",
+    "resources/public/vendor/neovim/browser.vim": "90b48d8545823ecfe3e04262a25868dbee69118516a70644eaf41a4f87140a11",
+    "resources/public/vendor/neovim/LICENSE.txt": "de23202ef9a51f5e654034190539739a4abece5505f2ce75e780791106707011",
+    "resources/public/vendor/neovim/nvim.js": "37dce0bd6acd2f5273a401075d921f1b9d0be9217df87dd880a1d2d85d8e0f6b",
+    "resources/public/vendor/neovim/nvim-worker.js": "5c6108b69e2e64b8cc4d5873c9c6a174bfadedbebb3793aac95a8f882e3189d5",
+    "resources/public/vendor/neovim/profile.json": "4db92316df3218d250afb9f334d561c3021cf451efe84cae13872b7b9a6823fd",
+    "src/frontend/website/modules/neovim/MSGPACKR-LICENSE": "d00470775464c789c7ac04cfba3bf1b79ef149790eb72556d1c51d8f50c8e7f3"
+  }
+}

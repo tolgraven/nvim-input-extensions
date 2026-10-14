@@ -5,12 +5,23 @@
   "description": "Neovim WASM textarea editing with ClojureScript and Reagent",
   "scripts": {
     "build": "node scripts/build.mjs",
-    "test": "node --test test/*.test.mjs",
-    "test:compile": "shadow-cljs compile test",
+    "test": "node dist/unit-tests.cjs && node test/transport.cjs && node --test test/*.test.mjs",
+    "test:compile": "shadow-cljs release unit",
     "package": "node scripts/package.mjs",
-    "safari": "node scripts/safari.mjs"
+    "safari": "node scripts/safari.mjs",
+    "fixture:build": "shadow-cljs release test",
+    "fixture": "node scripts/serve-fixture.mjs",
+    "check": "npm run build && npm run test:compile && node test/transport.cjs && node --test test/*.test.mjs"
   },
-  "dependencies": {"react": "19.3.0", "react-dom": "19.3.0"},
-  "devDependencies": {"shadow-cljs": "3.5.7", "jsdom": "26.1.0"},
-  "engines": {"node": ">=22.12.0"}
+  "dependencies": {
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "shadow-cljs": "3.5.7",
+    "jsdom": "26.1.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
 }

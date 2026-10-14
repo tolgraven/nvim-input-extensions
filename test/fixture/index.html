@@ -1,0 +1,13 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Inline Neovim integration</title>
+<style>body{font:1rem system-ui;margin:2rem;max-width:70rem} textarea{width:100%;box-sizing:border-box;min-height:8rem}label{display:block;margin-top:1rem}button{padding:.5rem}output{display:block;white-space:pre-wrap} .CodeMirror textarea{min-height:3rem}</style>
+<h1>Inline Neovim integration</h1><p>This fixture runs the real WASM engine and compiled Reagent component with a local extension messaging adapter.</p>
+<form id="plain-form"><label for="plain">Ordinary textarea</label><textarea id="plain" name="body" rows="10" required>First line
+Second line</textarea><button id="submit">Submit</button><button type="reset" id="reset">Reset</button></form>
+<output id="submitted"></output><output id="events"></output>
+<div id="controlled-root"></div>
+<label>Disabled<textarea id="disabled" disabled>Disabled</textarea></label>
+<label>Readonly<textarea id="readonly" readonly>Readonly</textarea></label>
+<div class="CodeMirror"><label>Rich editor backing field<textarea id="fancy">Fancy field</textarea></label></div>
+<button id="dynamic" type="button">Add dynamic textarea</button><div id="dynamic-root"></div>
+<script src="runtime.js"></script><script src="/test-js/main.js"></script>
+<script src="checks.js"></script></html>

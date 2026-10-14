@@ -4,3 +4,4 @@ node_modules/
 dist/
 artifacts/
 .DS_Store
+.local-wip/
