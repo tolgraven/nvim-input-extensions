@@ -4,6 +4,10 @@ Edit ordinary textareas **in the page, in place**, using the Neovim WASM
 Reagent component from [tolgrAVen](https://github.com/tolgraven/tolgrAVen).
 ClojureScript, Reagent 2, React 19 and Shadow CLJS. No re-frame or native host.
 
+The upstream component is still being developed in [tolgrAVen PR #173](https://github.com/tolgraven/tolgrAVen/pull/173).
+This extension uses an interim snapshot; refresh it from the final merged module
+once that PR is complete, then rerun the extension checks.
+
 Chrome is the first implementation. Safari is pending a compatible isolated
 worker host and verification of the current Neovim WASM binary.
 

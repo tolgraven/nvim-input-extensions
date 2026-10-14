@@ -26,5 +26,7 @@
     "resources/public/vendor/neovim/nvim-worker.js": "5c6108b69e2e64b8cc4d5873c9c6a174bfadedbebb3793aac95a8f882e3189d5",
     "resources/public/vendor/neovim/profile.json": "4db92316df3218d250afb9f334d561c3021cf451efe84cae13872b7b9a6823fd",
     "src/frontend/website/modules/neovim/MSGPACKR-LICENSE": "d00470775464c789c7ac04cfba3bf1b79ef149790eb72556d1c51d8f50c8e7f3"
-  }
+  },
+  "upstream-pr": "https://github.com/tolgraven/tolgrAVen/pull/173",
+  "upstream-status": "Draft PR at integration time; refresh this snapshot after PR #173 merges, retaining the extension adapters and rerunning release and browser checks."
 }
