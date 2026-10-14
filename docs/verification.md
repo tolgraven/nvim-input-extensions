@@ -25,8 +25,10 @@ ports on frame unload, matching extension messaging semantics.
 
 The final follow-up adds explicit startup focus delivery into the inline frame,
 change-event deduplication, restart-safe style restoration, and requestSubmit
-without a submitter. Build/unit checks passed; the updated fixture assertions and
-private-window follow-up remain to be rerun after the browser reconnects.
+without a submitter. Build/unit checks passed. The final installed private-window check verified startup
+focus, change-event deduplication, restart with retained content, and complete
+restoration of the native control. The expanded automated fixture rerun was
+interrupted by another browser disconnection; the earlier nine-check run passed.
 
 ## Installed unpacked Chrome extension
 
@@ -46,11 +48,26 @@ Chrome with user authorization for a temporary test. On `/native.html`:
 The initial installed test exposed a startup focus handoff issue; the final build
 sends an explicit focus message into the editor frame. It was reloaded in Chrome.
 
-The user then requested private-window testing to exclude Dark Reader, adblock and
-other extensions. The manifest uses split incognito contexts. Chrome disconnected
-while enabling the test extension's incognito permission, before a private window
-could be verified. Browser reattachment is required to finish that check and
-remove the temporary test installation. Do not treat this as completed cleanup.
+A final check ran in an actual Chrome Incognito window, with only Neovim Input
+shown among the enabled extension toolbar actions. Dark Reader, Vimium and the
+other regular extensions were absent. The manifest uses split incognito contexts.
+The host remained non-isolated and had no fixture adapter. Startup automatically
+focused the grid; pressing i, X and Escape produced `XInitial native value`,
+normal mode and one native input event. Submit delivered that exact value and
+emitted change. Restart preserved the buffer. Use regular textarea removed the
+frame, restored the original style/tabindex, and retained the edited value.
+The private native page had no warning/error console messages.
+
+The temporary test installation was removed through Chrome's extension manager;
+the Neovim Input card and toolbar action disappeared. Chrome disconnected again
+before the expanded automated fixture rerun finished. The installed extension
+must be disabled or removed before running the HTTP fixture, otherwise the real
+adapter and the fixture's adapter both try to claim the same fields. That setup
+mistake produced a recorded startup-timeout warning on `/`; the installed native
+page checks were clear.
+
+GitHub Actions successfully built, checked and packaged implementation commit
+`2a6c6d9`: https://github.com/tolgraven/nvim-input-extensions/actions/runs/38618027638
 
 ## Limits
 

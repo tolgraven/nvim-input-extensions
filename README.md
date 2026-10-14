@@ -62,7 +62,8 @@ serving the fixture. It deliberately leaves other sessions' workers/output alone
 
 For real-WASM browser regression checks, build `npm run fixture:build`, run
 `npm run fixture`, then open `http://127.0.0.1:4273/` in the existing Chrome.
-Run `runIntegrationChecks()` in that page. The fixture uses only a local messaging
+Disable/remove the installed extension first so the real adapter and the fixture
+adapter do not both claim its controls. Run `runIntegrationChecks()` in that page. The fixture uses only a local messaging
 adapter; it does **not** establish installed-extension support. The separate
 `http://127.0.0.1:4273/native.html` page has no isolation headers and no adapter,
 and is for testing the installed unpacked extension.
