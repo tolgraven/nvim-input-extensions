@@ -20,6 +20,7 @@ Use **Use regular textarea** to restore that control for the remainder of the vi
 
 The inline editor frame isolates Neovim's keys from the site's keyboard handlers
 and extensions such as Vimium. The original textarea remains the form control:
+its measured width, height and position are retained as the page layout changes;
 its name, native form ownership, validation and default value are retained. Buffer
 edits emit native input events; leaving the editor emits change. Application
 writes and resets update the buffer, and submit waits for a final synchronization.
@@ -29,7 +30,18 @@ transport's packet limit.
 The toolbar action opens settings. Disable the extension or add hostnames to the
 blacklist, one per line. An entry includes its subdomains. Settings changes
 restore affected controls on already-open pages. Settings use local extension
-storage; textarea contents are never stored or sent to a service.
+storage. Page drafts are not saved automatically or sent to a service.
+
+Use `:w notes.txt` to persist a virtual file locally, then `:e notes.txt` from any
+other textarea editor to recall it. `:e <Tab>` uses ordinary filename completion.
+Every editor uses `/workspace/files` as its working directory, with saved files
+materialized in its virtual filesystem, so `:Meta!` searches the shared project.
+Plain `:w` saves the initial buffer as `textarea`; choose distinct filenames for
+separate drafts. Saved files survive editor/page/browser restarts, including files
+explicitly saved in private windows. Existing editors receive filesystem updates;
+use `:e!` to reread a file already open elsewhere. Concurrent writes to the same
+name use the last saved value. Each file is limited to 4 MiB and Chrome's total
+local extension-storage quota applies. These are virtual files, not host files.
 
 Hidden, disabled, readonly and known rich-editor backing fields are skipped.
 Detection covers CodeMirror, Monaco, Ace, TinyMCE, CKEditor, Quill, ProseMirror,
@@ -66,8 +78,8 @@ serving the fixture. It deliberately leaves other sessions' workers/output alone
 
 For real-WASM browser regression checks, build `npm run fixture:build`, run
 `npm run fixture`, then open `http://127.0.0.1:4273/` in the existing Chrome.
-Disable/remove the installed extension first so the real adapter and the fixture
-adapter do not both claim its controls. Run `runIntegrationChecks()` in that page. The fixture uses only a local messaging
+The fixture captures its own textarea focus events so an installed extension does
+not also claim its controls. Click **Run integration checks**. The fixture uses only a local messaging
 adapter; it does **not** establish installed-extension support. The separate
 `http://127.0.0.1:4273/native.html` page has no isolation headers and no adapter,
 and is for testing the installed unpacked extension.

@@ -46,7 +46,7 @@
                          callback = function(args)
                            local text = table.concat(vim.api.nvim_buf_get_lines(args.buf, 0, -1, true), '\\n')
                            if vim.bo[args.buf].endofline then text = text .. '\\n' end
-                           vim.rpcnotify(channel, event, vim.api.nvim_buf_get_name(args.buf), text)
+                           vim.rpcnotify(channel, event, vim.fn.fnamemodify(args.file, ':p'), text)
                          end})"
                       [(aget info 0) group write-event]]))))
         (.catch #(when @*active? (fail! %))))
@@ -107,7 +107,9 @@
     (max 20 (min 240 (js/Math.floor (/ (.-clientWidth element) cell-width))))))
 
 (defn resize! [session element probe rows]
-  (request! session "nvim_ui_try_resize" [(column-count element probe) rows]))
+  (let [rows (or rows (max 1 (js/Math.floor (/ (.-clientHeight element)
+                                              (.-height (.getBoundingClientRect probe))))))]
+    (request! session "nvim_ui_try_resize" [(column-count element probe) rows])))
 
 (defn key-input [event]
   (model/key-input {:key (.-key event)

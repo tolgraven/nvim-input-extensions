@@ -3,5 +3,15 @@
 <h1>Native page · installed extension</h1><p>This page has no isolation headers and no extension messaging adapter.</p>
 <form id="form"><label for="plain">Message</label><textarea id="plain" name="body" rows="10" required>Initial native value</textarea><button id="submit">Submit</button><button type="reset" id="reset">Reset</button></form>
 <output id="submitted"></output><output id="events"></output>
+<section id="sizing" style="width:80%">
+<label for="flex-sized">Absolute textarea in a flex row (Stack Overflow layout)</label>
+<div style="display:flex;position:relative;align-items:center">
+<textarea id="flex-sized" style="position:absolute;inset:0;width:100%;height:100%;min-height:0;box-sizing:border-box">Flex layout</textarea>
+<pre aria-hidden="true" style="visibility:hidden;width:100%;height:12rem;margin:0">Sizing placeholder</pre>
+</div>
+</section>
+<button type="button" onclick="document.getElementById('sizing').style.width='55%';document.querySelector('#sizing pre').style.height='16rem'">Resize textarea layout</button>
+<button type="button" onclick="document.getElementById('sizing').style.width='100%';document.querySelector('#sizing pre').style.height='32rem'">Expand for Meta project search</button>
+<button type="button" id="measure">Check editor dimensions</button><output id="dimensions"></output>
 <label>Rich textarea<div class="CodeMirror"><textarea id="fancy">Rich editor backing field</textarea></div></label>
 <script src="native.js"></script></html>

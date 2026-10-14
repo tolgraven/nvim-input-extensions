@@ -1,7 +1,14 @@
+const trace=[];
+window.addEventListener('message',event=>{
+  const frame=[...document.querySelectorAll('iframe')].find(frame=>frame.contentWindow===event.source);
+  if(!frame || !['input','value','ready','failure'].includes(event.data?.op))return;
+  trace.push(`${frame.title}: ${event.data.op} rev=${event.data.revision} ${JSON.stringify(event.data.value)?.slice(0,100)}`);
+  document.querySelector('#sync-debug').textContent=trace.slice(-16).join('\n');
+});
 window.runIntegrationChecks = async () => {
   const checks = [];
   const wait = async (predicate, label) => {
-    for (let i=0;i<400;i++) {if(predicate())return;await new Promise(r=>setTimeout(r,20));}
+    for (let i=0;i<1500;i++) {if(predicate())return;await new Promise(r=>setTimeout(r,20));}
     throw new Error('Timed out: '+label);
   };
   const frameFor = field => field.nextElementSibling;
@@ -38,9 +45,54 @@ window.runIntegrationChecks = async () => {
   document.querySelector('#controlled-update').click();
   await wait(()=>gridFor(controlled)?.textContent.includes('Updated by the application'),'Reagent state reaches Neovim');
   checks.push('Reagent application write reaches Neovim');
+  const command=(field,text)=>{key(field,'Escape');for(const character of text)key(field,character);key(field,'Enter');};
+  const shared='Shared virtual project needle λ🙂\n';
+  plain.value=shared;
+  await wait(()=>gridFor(plain)?.textContent.includes('Shared virtual'),'shared file text');
+  command(plain,':w shared-fixture.txt');
+  let saved;
+  chrome.storage.onChanged.addListener(changes=>{if(changes['nvim-file:shared-fixture.txt'])saved=changes['nvim-file:shared-fixture.txt'].newValue;});
+  chrome.storage.local.get(null).then(values=>{saved=values['nvim-file:shared-fixture.txt'];});
+  await wait(()=>saved===shared,'explicit write persisted');
+  command(controlled,':e shared-fixture.txt');
+  await wait(()=>controlled.value===shared,'shared file recalled in existing editor');
+  key(controlled,'Escape');for(const character of ':e shared-fi')key(controlled,character);
+  await wait(()=>gridFor(controlled)?.textContent.includes(':e shared-fi'),'filename completion prompt');
+  key(controlled,'Tab');
+  await wait(()=>gridFor(controlled)?.textContent.includes(':e shared-fixture.txt'),'native filename completion');
+  key(controlled,'Escape');
+  command(controlled,':enew');
+  await wait(()=>!controlled.value.trim(),'leave the saved file before project search');
+  const beforeSearch=controlled.value;
+  controlled.style.height='32rem';
+  await wait(()=>frameFor(controlled).getBoundingClientRect().height>450,'project search viewport');
+  command(controlled,':Meta! needle');
+  await wait(()=>gridFor(controlled)?.textContent.includes('Shared virtual'),'Meta project search');
+  if(controlled.value!==beforeSearch)throw Error('Meta search UI replaced the native textarea text');
+  checks.push('Explicit :w persists exact text; :e recalls it in another existing editor; Tab completes the filename; Meta searches a saved file from an empty buffer without mirroring its scratch UI');
+  frameFor(controlled).contentDocument.querySelector('.inline-editor > button').click();
+  await wait(()=>controlled.getAttribute('tabindex')===null,'release the file-search editor');
+  const sized=document.querySelector('#flex-sized');
+  const matches = field => {
+    const native=field.getBoundingClientRect(), frame=frameFor(field).getBoundingClientRect();
+    return ['x','y','width','height'].every(key=>Math.abs(native[key]-frame[key])<1);
+  };
+  if (!matches(plain)) throw Error('Ordinary textarea bounds changed');
+  sized.focus();
+  await wait(()=>sized.getAttribute('tabindex')==='-1','flex textarea startup');
+  await wait(()=>matches(sized),'absolute textarea bounds');
+  const original=sized.getBoundingClientRect();
+  document.querySelector('#sizing').style.width='55%';
+  document.querySelector('#sizing pre').style.height='16rem';
+  await wait(()=>matches(sized) && sized.getBoundingClientRect().width<original.width && sized.getBoundingClientRect().height>original.height,'responsive textarea bounds');
+  const viewport=frameFor(sized).contentDocument.querySelector('.neovim__viewport');
+  await wait(()=>gridFor(sized).getBoundingClientRect().height<=viewport.clientHeight+1,'Neovim rows fit available height');
+  checks.push('Native bounds preserved in ordinary and absolute flex layouts; width, height and grid follow layout resizing');
   document.querySelector('#fancy').focus();document.querySelector('#readonly').focus();
   if(fixture.editors()!==2)throw Error('Fancy or readonly textarea was replaced');
   checks.push('Rich and readonly backing fields skipped');
+  frameFor(sized).contentDocument.querySelector('.inline-editor > button').click();
+  await wait(()=>sized.getAttribute('tabindex')===null,'release the sizing editor');
   document.querySelector('#dynamic').click();const added=document.querySelector('#added');added.focus();
   await wait(()=>added.getAttribute('tabindex')==='-1','dynamic textarea startup');
   const count=fixture.workers();added.remove();
@@ -54,3 +106,9 @@ window.runIntegrationChecks = async () => {
   checks.push('Live blacklist restores controls and disposes every worker');
   return checks;
 };
+document.querySelector('#run-checks').addEventListener('click', async () => {
+  const output=document.querySelector('#check-results');
+  output.textContent='Running…';
+  try {output.textContent=(await window.runIntegrationChecks()).join('\n');}
+  catch(error) {output.textContent='FAIL: '+error.message;}
+});

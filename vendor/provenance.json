@@ -28,5 +28,11 @@
     "src/frontend/website/modules/neovim/MSGPACKR-LICENSE": "d00470775464c789c7ac04cfba3bf1b79ef149790eb72556d1c51d8f50c8e7f3"
   },
   "upstream-pr": "https://github.com/tolgraven/tolgrAVen/pull/173",
-  "upstream-status": "Draft PR at integration time; refresh this snapshot after PR #173 merges, retaining the extension adapters and rerunning release and browser checks."
+  "upstream-status": "Draft PR at integration time; refresh this snapshot after PR #173 merges, retaining the extension adapters and rerunning release and browser checks.",
+  "extension-adaptations": [
+    "Inline measured textarea bounds and optional fit-height grid rows.",
+    "Disable airline tabline; use /workspace/files for native filename completion and Meta project search.",
+    "Persist explicit writes in Chrome local storage; materialize shared files in each native filesystem and refresh file reads.",
+    "Mirror the active ordinary file buffer on enter, line changes and reload; exclude special search buffers."
+  ]
 }

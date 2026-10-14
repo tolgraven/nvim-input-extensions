@@ -32,3 +32,8 @@
 .neovim-container { margin: 0; }
 .neovim__files { display: none; }
 button { font: inherit; cursor: pointer; }
+html, body, #app { height: 100%; overflow: hidden; }
+.inline-editor { height: 100%; display: flex; flex-direction: column; }
+.inline-editor > .neovim-container, .inline-editor .neovim { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.inline-editor .neovim__viewport { flex: 1; min-height: 0; }
+.inline-editor button, .inline-editor .neovim__toolbar { flex-shrink: 0; }

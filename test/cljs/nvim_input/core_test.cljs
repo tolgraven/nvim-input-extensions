@@ -2,6 +2,7 @@
   (:require [cljs.test :refer [deftest is testing async]]
             [nvim-input.config :as config]
             [nvim-input.textarea :as textarea]
+            [nvim-input.virtual-files :as virtual-files]
             ["jsdom" :refer [JSDOM]]))
 
 (defn document! []
@@ -55,3 +56,10 @@
     (is (= ["input" "change"] @events))
     (.reset (.getElementById doc "form"))
     (is (= "original" (textarea/text field)))))
+
+(deftest virtual-file-paths
+  (is (= "notes.txt" (virtual-files/relative-path "/workspace/files/notes.txt")))
+  (is (= "drafts/λ.txt" (virtual-files/relative-path "/workspace/files/drafts/λ.txt")))
+  (doseq [path ["/workspace/files-other/note" "/tmp/note" "/workspace/files/../note"
+                "/workspace/files/" "/workspace/files/a\\b" "/workspace/files/a/./b"]]
+    (is (nil? (virtual-files/relative-path path)))))

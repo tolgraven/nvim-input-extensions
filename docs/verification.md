@@ -1,5 +1,39 @@
 # Verification
 
+## Version 0.1.1 follow-up
+
+The release targets and fixture compiled without warnings through the required
+1.5-CPU Docker launcher. Four CLJS tests / 23 assertions, the native transport
+checks and package checks passed.
+
+In the installed extension in an actual Chrome Incognito window, with only
+Neovim Input in the extension toolbar:
+
+- Native textarea and inline frame bounds matched at 966 × 166 and 768 × 192.
+  Changing the flex layout produced matching 528 × 256 bounds. The native
+  textarea retained its original layout, including the absolute textarea plus
+  hidden sizing sibling used by Stack Overflow.
+- The redundant native tabline was absent. `:w installed-shared.txt` saved the
+  first field's text. A second textarea's `:e installed-sh<Tab>` completed the
+  native filename, and opening it updated its actual textarea value.
+- After reloading the page and creating a fresh editor, the same file reopened
+  with its exact contents, demonstrating persistence beyond the old workers.
+- From an empty `:enew` buffer in a larger textarea, `:Meta! Initial` found the
+  persisted file and displayed its contents and filename in project results.
+  The retained native textarea stayed empty while the Meta scratch UI was open.
+
+The installed test used `http://[::1]:4273/native.html`, because the existing
+user blacklist includes localhost and 127.0.0.1. Those settings were preserved.
+
+The expanded standalone fixture covers controlled fields, file completion,
+shared-file recall and Meta scratch-buffer exclusion. Its repeated full runs
+were interrupted by intermittent editor-startup timeouts while several other
+browser sessions were active; no full-pass claim is made for that expanded
+suite. File-read tracing exposed and fixed premature empty-buffer notifications
+and missing reload notifications. The installed private-window flows above
+verified the resulting behavior directly. Broad concurrent-editor startup still
+needs further coverage with the evolving upstream WASM component.
+
 ## Build and focused checks
 
 On 2026-10-14, release builds of content, frame, background, offscreen and options

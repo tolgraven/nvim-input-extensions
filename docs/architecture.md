@@ -7,6 +7,14 @@ constraints, default value and all existing listeners. The editor starts on firs
 focus, avoiding a WASM process for every dormant textarea. The regular control is
 usable during startup. Use regular textarea restores it for the rest of the visit.
 
+The native textarea keeps its original layout and dimensions while clipped. The
+frame is absolutely positioned over its border box, with ResizeObserver and
+reconciliation following site layout changes. This also handles an absolute
+textarea backed by a hidden sizing element in a flex row, as on Stack Overflow.
+The extension's fit-height component option sizes native Neovim rows to the
+remaining viewport height; the frame never expands the original field to fit its
+own content. This is an extension adaptation to retain during upstream refreshes.
+
 The content adapter and frame are ClojureScript, with Reagent 2 / React 19 for the component and
 options UI. Local ratoms project the Neovim redraw state. No re-frame is needed.
 The component's model, native keyboard/mouse renderer, profile and transport come
@@ -33,6 +41,18 @@ value setter followed by a bubbling input event, bypassing framework value track
 Change fires when leaving the editor. A 100 ms poll observes programmatic writes
 and resets, including writes that do not dispatch input. Submit waits for queued
 RPC and a final buffer read before re-dispatching through requestSubmit.
+
+Explicit native writes are stored as separate per-file keys in Chrome's local
+extension storage. Each editor materializes them as ordinary files under
+`/workspace/files` and uses that directory as its cwd. Storage changes update the
+virtual filesystem of live editors and clear Meta's project-file cache; normal
+filename completion and Meta project search use that filesystem. File-read hooks
+refresh from storage before completing asynchronous reads, including when another
+editor has just saved. Page buffers are not automatically written. Native
+BufEnter, line and reload notifications switch synchronization to the active file;
+special buffers used by Meta remain outside the textarea synchronization owner.
+The redundant airline tabline is disabled. These are extension adapters to retain
+when refreshing the upstream component.
 
 Plain textareas are considered on focus, including dynamically added controls and
 permitted HTTP(S) frames. Hidden, disabled, readonly, contenteditable and known

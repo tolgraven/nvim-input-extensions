@@ -15,6 +15,17 @@
    [:button {:id "controlled-update" :type "button" :on-click #(reset! *value "Updated by the application\nλ🙂\n")} "Update from application"]])
 
 (defn init! []
+  ;; This synthetic page owns its adapter. Stop focus at the window boundary so
+  ;; an installed copy cannot also acquire the same fields; it stays enabled
+  ;; and unaffected on every other page.
+  (.addEventListener js/window "focusin"
+    (fn [event]
+      (let [element (.-target event)]
+        (when (= "TEXTAREA" (.-tagName element))
+          (.stopImmediatePropagation event)
+          (if-let [host (:host (get @content/*editors element))]
+            (content/focus-editor! host)
+            (content/attach! element))))) true)
   (background/init!)
   (offscreen/init!)
   (content/init!)

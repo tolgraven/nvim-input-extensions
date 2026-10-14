@@ -43,16 +43,43 @@
   (.dispatchEvent element (js/Event. "change" #js {:bubbles true})))
 
 (def read-lua
-  "local b = ...; return table.concat(vim.api.nvim_buf_get_lines(b, 0, -1, true), '\\n')")
+  "local b = ...; local text = table.concat(vim.api.nvim_buf_get_lines(b, 0, -1, true), '\\n'); if vim.bo[b].endofline then text = text .. '\\n' end; return text")
 
 (def watch-lua
   "local channel, event = ...
-   local b = vim.api.nvim_get_current_buf()
-   vim.bo[b].fixendofline = false
-   vim.api.nvim_buf_attach(b, false, {
-     on_lines = function(_, buf)
+   local watched = {}
+   local function publish(buf)
+       if vim.b[buf].nvim_input_loading then return end
        local text = table.concat(vim.api.nvim_buf_get_lines(buf, 0, -1, true), '\\n')
-       vim.rpcnotify(channel, event, text)
+       if vim.bo[buf].endofline then text = text .. '\\n' end
+       vim.rpcnotify(channel, event, text, buf)
+   end
+   local function watch()
+     local buf = vim.api.nvim_get_current_buf()
+     if vim.bo[buf].buftype ~= '' then return nil end
+     vim.bo[buf].fixendofline = false
+     if not watched[buf] then
+       watched[buf] = true
+       vim.api.nvim_buf_attach(buf, false, {
+         on_lines = function(_, b)
+           if b == vim.api.nvim_get_current_buf() then publish(b) end
+         end,
+         on_reload = function(_, b)
+           if b == vim.api.nvim_get_current_buf() then publish(b) end
+         end,
+         on_detach = function(_, b) watched[b] = nil end
+       })
+     end
+     return buf
+   end
+   local b = watch()
+   vim.bo[b].endofline = false
+   vim.api.nvim_create_autocmd({'BufEnter', 'BufReadPost'}, {
+     group = vim.api.nvim_create_augroup(event, {clear = true}),
+     callback = function(args)
+       if args.buf == vim.api.nvim_get_current_buf() then
+         local buf = watch(); if buf then publish(buf) end
+       end
      end
    })
    return b")
@@ -70,7 +97,7 @@
                  [token (apply str chunk)]])))
          (js/Promise.resolve nil) chunks)
         (.then #(runtime/request! session "nvim_exec_lua"
-                  ["local b, key = ...; local parts = (_G.nvim_input_pending or {})[key] or {}; local text = table.concat(parts); if _G.nvim_input_pending then _G.nvim_input_pending[key] = nil end; vim.api.nvim_buf_set_lines(b, 0, -1, true, vim.split(text, '\\n', {plain=true}))"
+                  ["local b, key = ...; local parts = (_G.nvim_input_pending or {})[key] or {}; local text = table.concat(parts); if _G.nvim_input_pending then _G.nvim_input_pending[key] = nil end; vim.bo[b].endofline = false; vim.api.nvim_buf_set_lines(b, 0, -1, true, vim.split(text, '\\n', {plain=true}))"
                    [buffer token]])))))
 
 (defn sync!
@@ -86,6 +113,7 @@
         *buffer (atom nil)
         release! (.listen session event
                    (fn [payload]
+                     (when @*active? (reset! *buffer (aget payload 1)))
                      (when (and @*active? (not @*applying?) (= @*last (text element)))
                        (let [value (aget payload 0)
                              limit (.-maxLength element)
@@ -105,7 +133,11 @@
                                        (replace-buffer! session @*buffer value))))
                             (.finally #(reset! *applying? false))
                             (.catch #(when @*active? (fail! %)))))))))
-        stop! (fn [] (reset! *active? false) (js/clearInterval @*timer) (release!))]
+        stop! (fn []
+                (reset! *active? false) (js/clearInterval @*timer) (release!)
+                (-> (runtime/request! session "nvim_exec_lua"
+                      ["local group = ...; pcall(vim.api.nvim_del_augroup_by_name, group)" [event]])
+                    (.catch (fn [_] nil))))]
     (-> (runtime/request! session "nvim_get_api_info" [])
         (.then #(runtime/request! session "nvim_exec_lua" [watch-lua [(aget % 0) event]]))
         (.then (fn [buffer]

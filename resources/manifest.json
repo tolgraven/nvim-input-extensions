@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Neovim Input",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Edit ordinary textareas in Neovim, with your site's form kept in sync.",
   "minimum_chrome_version": "116",
   "permissions": [

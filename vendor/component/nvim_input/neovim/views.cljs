@@ -16,6 +16,7 @@
    [:?filetype [:string {:max 64}]]
    [:?cols [:int {:min 20, :max 240}]]
    [:?rows [:int {:min 8, :max 80}]]
+   [:?fit-height? boolean?]
    [:?on-save fn?]
    [:?on-write fn?]])
 
@@ -50,7 +51,7 @@
           [*view *imports *session *element *probe *grid-element *pointer *document])) [])]
   ;; The editor process owns its buffer. This ratom is its disposable UI projection,
   ;; like a native player/gesture adapter, never a mirrored application document store.
-  (let [{:keys [rows cols initial-text initial-file filetype on-save on-write]
+  (let [{:keys [rows cols initial-text initial-file filetype on-save on-write fit-height?]
          source-document :document
          :or {rows 24, cols 80, initial-text "", filetype "clojure"}} options
         fail! #(swap! *view assoc :status :error :message (.-message %))
@@ -99,7 +100,7 @@
                    #(when @*active? (swap! *view assoc :status %1 :message %2)))
                  resize! (fn []
                            (when (and @*active? @*element @*probe)
-                             (-> (runtime/resize! session @*element @*probe rows)
+                             (-> (runtime/resize! session @*element @*probe (when-not fit-height? rows))
                                  (.catch #(when @*active? (fail! %))))))]
              (reset! *session session)
              (-> ready (.then (fn [result]
@@ -279,7 +280,9 @@
           :on-lost-pointer-capture cancel-pointer!
           :on-context-menu #(when (mouse-ready?) (.preventDefault %))
           :on-key-down (fn [event]
-                         (when-let [input (when-not (= "Tab" (.-key event)) (runtime/key-input event))]
+                         (when-let [input (when (or (not= "Tab" (.-key event))
+                                                    (string/starts-with? (:mode grid) "cmdline"))
+                                            (runtime/key-input event))]
                            (when (= :ready status)
                              (.preventDefault event)
                              (request! "nvim_input" [input]))))

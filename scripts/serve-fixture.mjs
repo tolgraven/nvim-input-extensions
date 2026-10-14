@@ -2,6 +2,7 @@ import http from 'node:http';
 import {readFile} from 'node:fs/promises';
 import path from 'node:path';
 const root = process.cwd();
+const host = process.env.NVIM_FIXTURE_HOST || '127.0.0.1';
 const types = {'.js':'text/javascript','.html':'text/html','.css':'text/css','.json':'application/json','.wasm':'application/wasm','.woff2':'font/woff2'};
 http.createServer(async (request,response) => {
   const url = new URL(request.url,'http://localhost');
@@ -24,4 +25,4 @@ http.createServer(async (request,response) => {
     response.writeHead(200,{'Content-Type':types[path.extname(file)]||'application/octet-stream',...(url.pathname.startsWith('/native') ? {} : {'Cross-Origin-Opener-Policy':'same-origin','Cross-Origin-Embedder-Policy':'require-corp'}),'Cache-Control':'no-store'});
     response.end(bytes);
   } catch {response.writeHead(404).end();}
-}).listen(4273,'127.0.0.1',()=>console.log('Fixture: http://127.0.0.1:4273'));
+}).listen(4273,host,()=>console.log(`Fixture: http://${host.includes(':')?'['+host+']':host}:4273`));
