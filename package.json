@@ -1,0 +1,16 @@
+{
+  "name": "nvim-input-extensions",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Neovim WASM textarea editing with ClojureScript and Reagent",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test test/*.test.mjs",
+    "test:compile": "shadow-cljs compile test",
+    "package": "node scripts/package.mjs",
+    "safari": "node scripts/safari.mjs"
+  },
+  "dependencies": {"react": "19.3.0", "react-dom": "19.3.0"},
+  "devDependencies": {"shadow-cljs": "3.5.7", "jsdom": "26.1.0"},
+  "engines": {"node": ">=22.12.0"}
+}

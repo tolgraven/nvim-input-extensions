@@ -1,0 +1,17 @@
+{:source-paths ["src" "vendor/component" "test/cljs"]
+ :dependencies [[reagent "2.0.1"]]
+ :builds
+ {:content {:target :browser :output-dir "dist/chrome/js/content"
+            :modules {:main {:init-fn nvim-input.content/init!}}
+            :compiler-options {:output-feature-set :es2020}}
+  :background {:target :browser :output-dir "dist/chrome/js/background"
+               :modules {:main {:init-fn nvim-input.background/init!}}
+               :compiler-options {:output-feature-set :es2020}}
+  :offscreen {:target :browser :output-dir "dist/chrome/js/offscreen"
+              :modules {:main {:init-fn nvim-input.offscreen/init!}}
+              :compiler-options {:output-feature-set :es2020}}
+  :options {:target :browser :output-dir "dist/chrome/js/options"
+            :modules {:main {:init-fn nvim-input.options/init!}}
+            :compiler-options {:output-feature-set :es2020}}
+  :test {:target :browser :output-dir "dist/test/js"
+         :modules {:main {:init-fn nvim-input.fixture/init!}}}}}
