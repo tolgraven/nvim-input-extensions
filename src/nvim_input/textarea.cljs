@@ -1,7 +1,32 @@
 (ns nvim-input.textarea
   "The native textarea remains the form control. Neovim is its disposable editor."
   (:require [clojure.string :as string]
+            [goog.crypt :as crypt]
+            [goog.crypt.Sha256]
             [nvim-input.neovim.runtime :as runtime]))
+
+(defn field-identity [element]
+  (cond
+    (not-empty (.-id element)) (str "id:" (.-id element))
+    (not-empty (.-name element)) (str "name:" (.-name element))
+    (pos? (.-length (.-classList element))) (str "class:" (string/join "." (sort (array-seq (js/Array.from (.-classList element))))))
+    :else "textarea"))
+
+(defn draft-filename [url identity ordinal]
+  (let [page (js/URL. url)
+        key (pr-str [(.-origin page) (.-pathname page) (.-search page) identity ordinal])
+        digest (goog.crypt.Sha256.)
+        label (-> (str (.-host page) (.-pathname page) "--" identity "-" ordinal)
+                  (string/replace #"[^a-zA-Z0-9._-]+" "-"))]
+    (.update digest (crypt/stringToUtf8ByteArray key))
+    (str (subs label 0 (min 160 (count label))) "--" (subs (crypt/byteArrayToHex (.digest digest)) 0 32) ".txt")))
+
+(defn default-filename [element url]
+  (let [identity (field-identity element)
+        preceding (take-while #(not (identical? % element))
+                              (array-seq (.querySelectorAll (.-ownerDocument element) "textarea")))
+        ordinal (count (filter #(= identity (field-identity %)) preceding))]
+    (draft-filename url identity ordinal)))
 
 (def rich-selector
   (string/join "," ["[contenteditable]:not([contenteditable='false'])" "[role='combobox']"

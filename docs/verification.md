@@ -1,5 +1,58 @@
 # Verification
 
+## Version 0.1.3: merged upstream component
+
+The imported component now tracks PR #173's merge commit,
+`df3451086f912d9a97439fa2bc30f7c79fed2c4d`. Source hashes were refreshed against
+that immutable commit. The WASM binary, data, worker and plugin profile match the
+merged source. The extension bridge, toolbar hiding, floating controls, minimum
+rows, shared filesystem and textarea synchronization remain explicit adapters.
+
+All release targets and the browser fixture compiled with zero warnings through
+the required 1.5-CPU Docker launcher. Five CLJS tests / 31 assertions, native
+transport checks (including stale cleanup against a replacement listener),
+artifact checks and Chrome packaging passed.
+
+In private Chrome, the real-WASM upstream write checks passed for empty text,
+Unicode, LF, CRLF, multiple trailing newlines and missing final newlines. The
+checks also replaced the write watcher, threw from its consumer and verified that
+the error was reported while subsequent native RPC remained usable.
+
+The first full integration run exposed a named-write incompatibility in the
+merged watcher: `:w shared-fixture.txt` wrote that file, while the buffer name
+remained `textarea`. Reading the latter raised a native BufWritePost error and
+prevented persistence. The extension retains its previous absolute write-target
+adapter with upstream's new byte reader. The focused write regression now covers
+an alternate filename as well as the initial buffer name.
+
+Site-draft filenames use a readable URL/field prefix plus a stable identity hash.
+Unit checks cover URL/query separation, fragment stability, IDs surviving class
+changes, sorted classes, repeated controls and filename length bounds.
+
+In the installed extension in private Chrome, `/native.html?short&recovery=173`
+generated a URL/field filename for `#plain`. Plain `:w` saved a two-line Unicode
+draft without a final newline. Reloading the page restored its original server
+default first; focusing the field then recovered the exact draft into both the
+visible grid and retained textarea. The real form submitted that restored text.
+
+All twelve real-WASM integration checks passed in private Chrome: startup/focus,
+edits and native events, large Unicode text and trailing newlines, form submission
+and reset, controlled Reagent fields, exact LF/CRLF storage writes, shared-file
+recall, filename completion, Meta scratch-buffer exclusion, responsive ordinary
+and absolute layouts, rich/readonly detection, dynamic worker disposal, restart
+and live blacklist cleanup. The final check saved with plain `:w`, made an
+unsaved edit, verified restart retained it, then created a fresh editor with a
+different server default and recovered the last saved site draft instead.
+
+The final build also passed both short-field layout checks: eight fitted native
+rows, first-row content without a tabline, no external mode title, labelled
+floating controls, matching bounds and exact original-height restoration.
+
+Chrome's actual extension reload retained the saved site draft. Revisiting the
+native fixture afterward and focusing `#plain` recovered the same exact text
+through a new extension worker. The manager showed 0.1.3 enabled from this
+checkout's `dist/chrome`, with Allow in Incognito on; it was left installed.
+
 ## Version 0.1.2 follow-up
 
 All five release targets, the unit target and the real-WASM fixture compiled

@@ -17,8 +17,9 @@
     (when-let [path (relative-path (str root (subs key (count key-prefix))))]
       {:path (str "files/" path) :file (js/Blob. #js [text])})))
 
-(defn start! [^js session fail!]
+(defn start! [^js session filename fail!]
   (let [request! #(runtime/request! session %1 %2)
+        filename (or (relative-path (str root filename)) "textarea")
         *active? (atom true)
         *queue (atom (js/Promise.resolve nil))
         read-event (str "nvim-file-read-" (random-uuid))
@@ -52,7 +53,7 @@
                      (doseq [key (array-seq (js/Object.keys changes))]
                        (when-let [descriptor (stored-file key (.-newValue (aget changes key)))]
                          (write! descriptor)))))
-        release! (runtime/watch-writes! session
+        writes (runtime/watch-writes! session
                    (fn [{:keys [path text]}]
                      (if-let [relative (relative-path path)]
                        (if (<= (.-length (.encode (js/TextEncoder.) text)) files/max-file-bytes)
@@ -66,16 +67,17 @@
                    (-> (request! "nvim_exec_lua"
                          ["local group = ...; pcall(vim.api.nvim_del_augroup_by_name, group)" [read-event]])
                        (.catch (fn [_] nil)))
-                   (release!))]
+                   ((:stop! writes)))]
     (.addListener js/chrome.storage.onChanged changed!)
     (-> (request! "nvim_exec_lua"
-          ["vim.fn.mkdir('/workspace/files', 'p')
+          ["local filename = ...
+            vim.fn.mkdir('/workspace/files', 'p')
             vim.cmd('cd /workspace/files')
-            vim.api.nvim_buf_set_name(0, '/workspace/files/textarea')
+            vim.api.nvim_buf_set_name(0, '/workspace/files/' .. filename)
             vim.o.autowrite = false
             vim.o.autowriteall = false
             vim.g['airline#extensions#tabline#enabled'] = 0
-            vim.o.showtabline = 0" []])
+            vim.o.showtabline = 0" [filename]])
         (.then #(request! "nvim_get_api_info" []))
         (.then (fn [info]
                  (request! "nvim_exec_lua"
@@ -87,11 +89,16 @@
                          vim.b[args.buf].nvim_input_loading = true
                          vim.rpcnotify(channel, event, vim.fn.fnamemodify(args.file, ':p'), args.buf)
                        end})" [(aget info 0) read-event]])))
-        (.then #(.get js/chrome.storage.local nil))
+        (.then #(-> (:ready writes) (.then (fn [_] (.get js/chrome.storage.local nil)))))
         (.then (fn [stored]
                  (doseq [key (array-seq (js/Object.keys stored))]
                    (when-let [descriptor (stored-file key (aget stored key))]
                      (write! descriptor)))
-                 @*queue))
-        (.then (fn [] stop!))
+                 (let [saved-text (aget stored (str key-prefix filename))]
+                   (-> @*queue
+                       (.then #(when (string? saved-text)
+                                 (request! "nvim_exec_lua"
+                                   ["local path = ...; vim.cmd('silent noautocmd edit! ' .. vim.fn.fnameescape(path))"
+                                    [(str root filename)]])))
+                       (.then (fn [] {:stop! stop! :saved-text saved-text}))))))
         (.catch (fn [error] (stop!) (throw error))))))

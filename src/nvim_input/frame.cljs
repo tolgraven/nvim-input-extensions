@@ -38,20 +38,25 @@
 (defn initialize! [^js message]
   (when (and (string? (.-value message)) (compare-and-set! *initialized? false true))
     (let [dummy (.createElement js/document "textarea")
+          *restore? (atom true)
+          initial-revision (or (.-revision message) 0)
           label (if (string? (.-label message)) (.-label message) "Text")
           fail! #(send! #js {:op "failure" :value (.-message %)})
           ready! (fn [session]
                    (when-let [sync @*sync] ((:stop! sync)))
                    (when-let [stop! @*files-cleanup] (stop!))
                    (reset! *files-cleanup nil)
-                   (-> (virtual-files/start! session
+                   (-> (virtual-files/start! session (.-fileName message)
                          (fn [error]
                            (js/console.warn "Neovim Input could not persist a virtual file:" (.-message error))
                            (-> (runtime/request! session "nvim_echo"
                                  [[[(str "Virtual file: " (.-message error)) "ErrorMsg"]] true {}])
                                (.catch (fn [_] nil)))))
-                       (.then (fn [stop!]
+                       (.then (fn [{:keys [stop! saved-text]}]
                                 (reset! *files-cleanup stop!)
+                                (when (and (compare-and-set! *restore? true false)
+                                           (= initial-revision @*revision) (string? saved-text))
+                                  (textarea/input! dummy saved-text))
                                 (textarea/sync! session dummy
                          (fn []
                            (when-let [grid (.querySelector js/document ".neovim__grid")]

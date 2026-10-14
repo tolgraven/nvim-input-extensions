@@ -1,16 +1,16 @@
 {
   "repository": "https://github.com/tolgraven/tolgrAVen",
-  "branch": "codex/neovim-wasm",
-  "commit": "793eb7e78635680efdd0b8534b836bede5e0b102",
+  "branch": "master",
+  "commit": "df3451086f912d9a97439fa2bc30f7c79fed2c4d",
   "note": "Pinned component and runtime snapshot. Hashes record the original files before the documented extension adaptations.",
   "files": {
     "src/frontend/website/modules/neovim/model.cljs": "127724c178018500e0a480eb249d3cd5620bc3a01216bb54ade8e17b2b552c1f",
     "src/frontend/website/modules/neovim/files.cljs": "5594263d56d6a2c9af5b9c85a5f45fc88121f525dbc0f7ec3722a9354cf66358",
-    "src/frontend/website/modules/neovim/document.cljs": "623053eed4b643bc9e4cf9952cead0db4027105f4578b3b6e70470fe67fdf4dd",
+    "src/frontend/website/modules/neovim/document.cljs": "8bfd457d88a6bce47d21f38c42b337aa0380c80ccbc36141bbcdc45bfffd3c61",
     "src/frontend/website/modules/neovim/profile.cljs": "f7212dc6d362080f047d055fa725a5080169e6f453f8a596610b52b4c57ce43d",
-    "src/frontend/website/modules/neovim/runtime.cljs": "240157c03fd0c45b01cb955d426ff4b2301b0657ebb332a8e2717bd6d8b1aa4a",
-    "src/frontend/website/modules/neovim/views.cljs": "935511c6f9706d0e7b2d0f15b3ac0629a98c55ad0ae1c07e487e24f5895c1dde",
-    "src/frontend/website/modules/neovim/transport.js": "7de0133ad3d66324860566a76f093942ead5daf555e25a14d823f5d7d4e9af43",
+    "src/frontend/website/modules/neovim/runtime.cljs": "db010370ff65c6f1c8c192ba0c22909b922582a8bc2a3e94a1d9bb35e8f950a0",
+    "src/frontend/website/modules/neovim/views.cljs": "fbd99ccb33ab76f727e5c5683b7fecf9880238028c0846a49175790c051aa012",
+    "src/frontend/website/modules/neovim/transport.js": "bb834ba8d7a3e472b8a8ca3a64669256154cbebe6828bd850b186db724368e7d",
     "src/frontend/website/modules/neovim/msgpackr.js": "216670eea06cf0a17457e648dea46b20028ee230bd06747c6252eec2a777173d",
     "resources/public/vendor/neovim/init.lua": "9c81749dada61aa98f125ce42c155112f1d39f24380b332e40a05b1da0e80909",
     "resources/public/vendor/neovim/nvim.data": "9e6a777567054ccf060b4ce6d4242c567785c1378a5d0128659b9bebe2235917",
@@ -25,15 +25,19 @@
     "resources/public/vendor/neovim/nvim.js": "37dce0bd6acd2f5273a401075d921f1b9d0be9217df87dd880a1d2d85d8e0f6b",
     "resources/public/vendor/neovim/nvim-worker.js": "5c6108b69e2e64b8cc4d5873c9c6a174bfadedbebb3793aac95a8f882e3189d5",
     "resources/public/vendor/neovim/profile.json": "4db92316df3218d250afb9f334d561c3021cf451efe84cae13872b7b9a6823fd",
-    "src/frontend/website/modules/neovim/MSGPACKR-LICENSE": "d00470775464c789c7ac04cfba3bf1b79ef149790eb72556d1c51d8f50c8e7f3"
+    "src/frontend/website/modules/neovim/MSGPACKR-LICENSE": "d00470775464c789c7ac04cfba3bf1b79ef149790eb72556d1c51d8f50c8e7f3",
+    "resources/public/vendor/neovim/after/syntax/nerdtree.vim": "8a6361c14299a7bd4ceb02981edfbad6137c6b33399564a6e43710a86f2ba3e9"
   },
   "upstream-pr": "https://github.com/tolgraven/tolgrAVen/pull/173",
-  "upstream-status": "Draft PR at integration time; refresh this snapshot after PR #173 merges, retaining the extension adapters and rerunning release and browser checks.",
+  "upstream-status": "Merged PR #173 on 2026-10-14; pinned to its merge commit, retaining the documented extension adapters.",
   "extension-adaptations": [
     "Inline measured textarea bounds and optional fit-height grid rows, with a six-editing-line minimum.",
     "Optional mode-toolbar hiding and accessible floating restart/restore controls without extra rows.",
     "Disable airline tabline; use /workspace/files for native filename completion and Meta project search.",
     "Persist explicit writes in Chrome local storage; materialize shared files in each native filesystem and refresh file reads.",
-    "Mirror the active ordinary file buffer on enter, line changes and reload; exclude special search buffers."
+    "Mirror the active ordinary file buffer on enter, line changes and reload; exclude special search buffers.",
+    "Wait for the merged write-watcher readiness contract before completing shared-file initialization.",
+    "Read and persist the absolute BufWritePost target (including :w another-name.txt), which can differ from the current buffer name.",
+    "Stable per-site URL/textarea initial filenames; restore explicitly saved drafts through the native input bridge while preserving unsaved edits on component restart."
   ]
 }

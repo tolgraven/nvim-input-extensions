@@ -63,3 +63,24 @@
   (doseq [path ["/workspace/files-other/note" "/tmp/note" "/workspace/files/../note"
                 "/workspace/files/" "/workspace/files/a\\b" "/workspace/files/a/./b"]]
     (is (nil? (virtual-files/relative-path path)))))
+
+(deftest site-draft-filenames
+  (let [doc (document!) field (.getElementById doc "text")
+        url "https://example.com/questions/123?view=edit"
+        filename (textarea/default-filename field url)]
+    (is (.startsWith filename "example.com-questions-123--id-text-0--"))
+    (is (= filename (textarea/default-filename field (str url "#comment"))))
+    (.setAttribute field "class" "focused dynamic")
+    (is (= filename (textarea/default-filename field url)))
+    (is (not= filename (textarea/default-filename field "https://example.com/questions/456?view=edit")))
+    (is (not= filename (textarea/default-filename field "https://example.com/questions/123?view=other")))
+    (.removeAttribute field "id")
+    (.removeAttribute field "name")
+    (.setAttribute field "class" "reply draft")
+    (let [first-name (textarea/default-filename field url)
+          second (.cloneNode field true)]
+      (.setAttribute field "class" "draft reply")
+      (is (= first-name (textarea/default-filename field url)))
+      (.append (.-body doc) second)
+      (is (not= first-name (textarea/default-filename second url))))
+    (is (< (count (textarea/draft-filename (str "https://example.com/" (apply str (repeat 1000 "long/"))) "id:reply" 0)) 256))))

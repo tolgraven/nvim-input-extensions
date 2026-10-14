@@ -1,6 +1,6 @@
 {
   "name": "nvim-input-extensions",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": true,
   "description": "Neovim WASM textarea editing with ClojureScript and Reagent",
   "scripts": {

@@ -54,6 +54,12 @@ window.runIntegrationChecks = async () => {
   chrome.storage.onChanged.addListener(changes=>{if(changes['nvim-file:shared-fixture.txt'])saved=changes['nvim-file:shared-fixture.txt'].newValue;});
   chrome.storage.local.get(null).then(values=>{saved=values['nvim-file:shared-fixture.txt'];});
   await wait(()=>saved===shared,'explicit write persisted');
+  command(plain,':set fileformat=dos');
+  command(plain,':w! shared-fixture.txt');
+  await wait(()=>saved===shared.replaceAll('\n','\r\n'),'persist exact CRLF bytes from native write');
+  command(plain,':set fileformat=unix');
+  command(plain,':w! shared-fixture.txt');
+  await wait(()=>saved===shared,'restore LF file format');
   command(controlled,':e shared-fixture.txt');
   await wait(()=>controlled.value===shared,'shared file recalled in existing editor');
   key(controlled,'Escape');for(const character of ':e shared-fi')key(controlled,character);
@@ -98,12 +104,30 @@ window.runIntegrationChecks = async () => {
   const count=fixture.workers();added.remove();
   await wait(()=>fixture.workers()===count-1,'removed textarea worker disposal');
   checks.push('Dynamic textarea mounted; removal releases native worker');
-  frameFor(plain).contentDocument.querySelector('button').click();
-  await wait(()=>gridFor(plain)?.textContent.includes('First line'),'restart preserves mirrored buffer');
+  const savedDraft=plain.value;
+  let defaultKey;
+  chrome.storage.onChanged.addListener(changes=>{
+    defaultKey=Object.keys(changes).find(key=>key.startsWith('nvim-file:') && key!=='nvim-file:shared-fixture.txt' && changes[key].newValue===savedDraft) || defaultKey;
+  });
+  command(plain,':w');
+  await wait(()=>defaultKey,'plain :w persists the site-specific initial filename');
+  plain.value=savedDraft+'Unsaved before restart';
+  await wait(()=>gridFor(plain)?.textContent.includes('Unsaved before'),'unsaved application edit');
+  const beforeRestart=plain.value;
+  frameFor(plain).contentDocument.querySelector('.neovim__restart').click();
+  await wait(()=>gridFor(plain)?.textContent.includes('Shared virtual'),'restart preserves mirrored buffer');
+  if(plain.value!==beforeRestart)throw Error('Restart changed textarea contents');
   await fixture.blacklist(['127.0.0.1']);
   await wait(()=>fixture.editors()===0 && fixture.workers()===0,'blacklist cleanup');
   if(plain.getAttribute('tabindex')!==null || plain.style.position) throw Error('Native control not restored');
   checks.push('Live blacklist restores controls and disposes every worker');
+  plain.value='Server value on the next visit';
+  await fixture.blacklist([]);
+  plain.focus();
+  await wait(()=>plain.getAttribute('tabindex')==='-1' && plain.value===savedDraft,'saved site draft restored into a fresh editor and native textarea');
+  checks.push('Plain :w saves the stable site/field filename; restart keeps unsaved edits; a fresh editor restores the last saved draft over the page default');
+  await fixture.blacklist(['127.0.0.1']);
+  await wait(()=>fixture.editors()===0 && fixture.workers()===0,'draft recovery cleanup');
   return checks;
 };
 document.querySelector('#run-checks').addEventListener('click', async () => {
@@ -131,6 +155,7 @@ document.querySelector('#run-layout-checks').addEventListener('click',async()=>{
       const frame=field.nextElementSibling,doc=frame.contentDocument;
       const grid=doc.querySelector('.neovim__grid'),viewport=doc.querySelector('.neovim__viewport');
       await wait(()=>grid.children.length>=8 && grid.getBoundingClientRect().height<=viewport.clientHeight+1,id+' eight fitted rows');
+      await wait(()=>grid.firstElementChild?.textContent.includes(field.value.split('\n')[0]),id+' first editing row without native tabline');
       const native=field.getBoundingClientRect(),bounds=frame.getBoundingClientRect();
       if(!['x','y','width','height'].every(key=>Math.abs(native[key]-bounds[key])<1))throw Error(id+' mismatched bounds');
       if(doc.querySelector('.neovim__toolbar'))throw Error('Extra mode title remains');

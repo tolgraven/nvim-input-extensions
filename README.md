@@ -4,9 +4,10 @@ Edit ordinary textareas **in the page, in place**, using the Neovim WASM
 Reagent component from [tolgrAVen](https://github.com/tolgraven/tolgrAVen).
 ClojureScript, Reagent 2, React 19 and Shadow CLJS. No re-frame or native host.
 
-The upstream component is still being developed in [tolgrAVen PR #173](https://github.com/tolgraven/tolgrAVen/pull/173).
-This extension uses an interim snapshot; refresh it from the final merged module
-once that PR is complete, then rerun the extension checks.
+The upstream component comes from the merged [tolgrAVen PR #173](https://github.com/tolgraven/tolgrAVen/pull/173),
+pinned to merge commit `df3451086f912d9a97439fa2bc30f7c79fed2c4d`.
+The extension retains its compact inline controls, measured textarea layout,
+synchronization and shared-file persistence when refreshing that component.
 
 Chrome is the first implementation. Safari is pending a compatible isolated
 worker host and verification of the current Neovim WASM binary.
@@ -41,12 +42,20 @@ Use `:w notes.txt` to persist a virtual file locally, then `:e notes.txt` from a
 other textarea editor to recall it. `:e <Tab>` uses ordinary filename completion.
 Every editor uses `/workspace/files` as its working directory, with saved files
 materialized in its virtual filesystem, so `:Meta!` searches the shared project.
-Plain `:w` saves the initial buffer as `textarea`; choose distinct filenames for
-separate drafts. Saved files survive editor/page/browser restarts, including files
+The initial filename is derived from the site, URL path and textarea ID (falling
+back to its name, sorted classes and occurrence among matching fields). A short
+hash distinguishes full URL/query and field identities; URL fragments are ignored.
+Plain `:w` saves that field's draft. Returning to the same URL and focusing the
+same textarea restores the saved contents into both Neovim and the site's actual
+control, even when the site supplied different default text. Edits made while
+the editor is starting take priority. Restart keeps unsaved edits; revisiting
+restores the last explicit save. `:w notes.txt` also remains available for shared
+named files. Saved files survive editor/page/browser restarts, including files
 explicitly saved in private windows. Existing editors receive filesystem updates;
 use `:e!` to reread a file already open elsewhere. Concurrent writes to the same
 name use the last saved value. Each file is limited to 4 MiB and Chrome's total
 local extension-storage quota applies. These are virtual files, not host files.
+Earlier saves under the generic name `textarea` remain available via `:e textarea`.
 
 Hidden, disabled, readonly and known rich-editor backing fields are skipped.
 Detection covers CodeMirror, Monaco, Ace, TinyMCE, CKEditor, Quill, ProseMirror,

@@ -59,6 +59,25 @@ special buffers used by Meta remain outside the textarea synchronization owner.
 The redundant airline tabline is disabled. These are extension adapters to retain
 when refreshing the upstream component.
 
+The component is pinned to PR #173's merged commit. Its write watcher now exposes
+readiness and cleanup separately; the shared-file adapter waits for readiness
+before declaring the editor ready. Write notifications read the actual native
+file bytes, preserving LF/CRLF and EOF behavior. Consumer write errors remain
+recoverable, and stale notification cleanup cannot remove a replacement owner.
+The write path remains the absolute `BufWritePost` target, rather than the buffer
+name: `:w another-name.txt` can write a different file while retaining that name.
+
+Each field's initial filename combines a readable site/path/field prefix with a
+SHA-256 identity suffix. Field IDs take priority over names and sorted classes;
+an occurrence index separates matching anonymous controls. Origin, pathname and
+query distinguish pages; fragments do not. The file remains under the shared
+`/workspace/files` root. Initialization materializes and opens an existing saved
+file, retaining its native file format, and restores its text through the normal
+textarea input bridge before readiness. A site write during startup takes
+priority via the existing revision owner. Component restart retains the live
+dummy contents instead of reapplying the older saved draft. Only explicit native
+writes persist edits.
+
 Plain textareas are considered on focus, including dynamically added controls and
 permitted HTTP(S) frames. Hidden, disabled, readonly, contenteditable and known
 CodeMirror, Monaco, Ace, TinyMCE, CKEditor, Quill, ProseMirror, Slate and Lexical

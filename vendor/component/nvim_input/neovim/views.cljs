@@ -140,7 +140,7 @@
       (hooks/use-effect
        (fn []
          (when (and (= :ready status) on-write (not source-document))
-           (runtime/watch-writes! @*session on-write fail!)))
+           (:stop! (runtime/watch-writes! @*session on-write command-error!))))
        [status on-write source-document])
       (hooks/use-layout-effect
        (fn []

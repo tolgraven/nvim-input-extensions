@@ -144,6 +144,7 @@
                                   (= origin (.-origin event)) (= channel (.-channel message)))
                          (case (.-op message)
                            "loaded" (send! #js {:op "init" :value (textarea/text element) :revision @*revision
+                                                 :fileName (textarea/default-filename element (.-href js/location))
                                                  :label label :rows (max 8 (min 30 (.-rows element)))
                                                  :maxLength (.-maxLength element)})
                            "ready" (do (reset! *ready? true)
