@@ -3,11 +3,65 @@
             [reagent.dom.client :as dom]
             [nvim-input.background :as background]
             [nvim-input.offscreen :as offscreen]
+            [nvim-input.editor :as editor]
             [nvim-input.neovim.runtime :as runtime]
             [nvim-input.content :as content]))
 
 (defonce *value (r/atom "Controlled initial text"))
 (defonce *write-checks (r/atom "Not run"))
+(defonce *editor-checks (r/atom "Not run"))
+
+(defn editor-checks! []
+  (reset! *editor-checks "Running…")
+  (let [{:keys [session ready stop!]}
+        (runtime/start! {:cols 100 :rows 12 :initial-text (apply str (map #(str "line " % "\n") (range 1 31))) :filetype "text"}
+                        (fn [_]) (fn [_ _]))
+        request! #(runtime/request! session %1 %2)
+        wheel! (fn [action n]
+                 (reduce (fn [pending _]
+                           (.then pending #(request! "nvim_input_mouse" ["wheel" action "" 0 2 5])))
+                         (js/Promise.resolve nil) (range n)))]
+    (-> ready
+        (.then #(editor/configure! session))
+        (.then #(request! "nvim_exec_lua"
+                  ["vim.o.showtabline = 0
+                    vim.api.nvim_buf_set_name(0, '/workspace/example.com-very-long-filename-with-a-middle-that-should-disappear-and-a-recognizable-ending.txt')
+                    assert(vim.bo.filetype == 'text' and vim.g.airline_section_x == '')
+                    local short = NvimInput.middle('prefix-🙂-some-very-long-middle-λ-suffix.txt', 24)
+                    assert(vim.fn.strdisplaywidth(short) <= 24 and short:find('...', 1, true))" []]))
+        (.then (fn [_]
+                 (reduce (fn [pending width]
+                           (-> pending
+                               (.then #(request! "nvim_ui_try_resize" [width 12]))
+                               (.then #(request! "nvim_exec_lua"
+                                         ["vim.cmd('AirlineRefresh'); local name = NvimInput.filename()
+                                           assert(name:find('...', 1, true) and name:sub(1, 2) == 'ex' and name:sub(-2) == 'xt')
+                                           local status = vim.api.nvim_eval_statusline(vim.wo.statusline, {maxwidth = vim.api.nvim_win_get_width(0)}).str
+                                           assert(status:find(name, 1, true), 'Filename ends were clipped by native statusline truncation')
+                                           assert(not status:find(' text ', 1, true), 'Filetype remains visible')" []]))))
+                         (js/Promise.resolve nil) [100 60 40])))
+        (.then #(request! "nvim_ui_try_resize" [100 12]))
+        (.then #(editor/start-mode! session ""))
+        (.then #(request! "nvim_exec_lua" ["assert(vim.api.nvim_get_mode().mode:sub(1, 1) == 'i', 'Empty startup did not enter insert mode')" []]))
+        (.then #(wheel! "down" 45))
+        (.then #(request! "nvim_exec_lua"
+                  ["assert(vim.fn.line('w$') == vim.fn.line('$'), 'Wheel did not reach EOF')
+                    assert(vim.fn.line('w0') <= math.max(1, vim.fn.line('$') - vim.api.nvim_win_get_height(0) + 1), 'Wheel scrolled past EOF')
+                    assert(vim.api.nvim_get_mode().mode:sub(1, 1) == 'i', 'Wheel left insert mode')" []]))
+        (.then #(wheel! "up" 3))
+        (.then #(request! "nvim_exec_lua" ["assert(vim.fn.line('w$') < vim.fn.line('$'), 'Upward wheel stopped working')" []]))
+        (.then #(editor/start-mode! session "nonempty"))
+        (.then #(wheel! "down" 10))
+        (.then #(request! "nvim_exec_lua"
+                  ["assert(vim.api.nvim_get_mode().mode == 'n', 'Nonempty startup did not enter normal mode')
+                    assert(vim.fn.line('w0') <= math.max(1, vim.fn.line('$') - vim.api.nvim_win_get_height(0) + 1), 'Normal-mode wheel scrolled past EOF')
+                    vim.api.nvim_buf_set_lines(0, 0, -1, true, {'short'})
+                    vim.cmd('normal! gg')" []]))
+        (.then #(wheel! "down" 10))
+        (.then #(request! "nvim_exec_lua" ["assert(vim.fn.line('w0') == 1, 'Short buffer was scrolled out of view')" []]))
+        (.then #(reset! *editor-checks "PASS: initial insert/normal modes; middle-truncated airline filename at wide/narrow widths; hidden filetype; EOF-limited mouse wheel in insert/normal modes; upward scrolling and short buffers"))
+        (.catch #(reset! *editor-checks (str "FAIL: " (.-message %))))
+        (.finally stop!))))
 
 (defn check-written-text! [text]
   (let [{:keys [session ready stop!]} (runtime/start! {:cols 40 :rows 12 :initial-text text :filetype "text"}
@@ -57,7 +111,9 @@
    [:output {:id "controlled-value"} @*value]
    [:button {:id "controlled-update" :type "button" :on-click #(reset! *value "Updated by the application\nλ🙂\n")} "Update from application"]
    [:button {:type "button" :on-click write-checks!} "Run upstream write checks"]
-   [:output {:id "write-results"} @*write-checks]])
+   [:output {:id "write-results"} @*write-checks]
+   [:button {:type "button" :on-click editor-checks!} "Run editor behavior checks"]
+   [:output {:id "editor-results"} @*editor-checks]])
 
 (defn init! []
   ;; This synthetic page owns its adapter. Stop focus at the window boundary so

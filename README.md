@@ -20,6 +20,10 @@ its editor. The textarea stays usable during startup; Neovim then takes its plac
 Hover the editor to reveal restart and regular-textarea icons on its right edge.
 Their descriptions appear on hover; both controls are also keyboard accessible.
 The regular-textarea icon restores that control for the remainder of the visit.
+Empty contents start in insert mode; nonempty contents, including restored drafts,
+start in normal mode. Airline shortens long filenames in the middle, retaining
+both ends, and hides the filetype label. Mouse-wheel scrolling stops once the
+last line is visible.
 
 The inline editor frame isolates Neovim's keys from the site's keyboard handlers
 and extensions such as Vimium. The original textarea remains the form control:
@@ -97,6 +101,8 @@ not also claim its controls. Click **Run integration checks**. The fixture uses 
 adapter; it does **not** establish installed-extension support. The separate
 `http://127.0.0.1:4273/native.html` page has no isolation headers and no adapter,
 and is for testing the installed unpacked extension.
+**Run editor behavior checks** exercises initial modes, airline at several
+widths, and native mouse-wheel bounds against the real WASM engine.
 
 The GitHub workflow builds and packages Chrome. Browser/installed-extension
 verification is documented separately in [docs/verification.md](docs/verification.md).

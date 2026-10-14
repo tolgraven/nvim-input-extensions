@@ -1,6 +1,7 @@
 (ns nvim-input.frame
   (:require [reagent.core :as r :refer [defc]]
             [reagent.dom.client :as dom]
+            [nvim-input.editor :as editor]
             [nvim-input.textarea :as textarea]
             [nvim-input.virtual-files :as virtual-files]
             [nvim-input.neovim.runtime :as runtime]
@@ -57,12 +58,17 @@
                                 (when (and (compare-and-set! *restore? true false)
                                            (= initial-revision @*revision) (string? saved-text))
                                   (textarea/input! dummy saved-text))
+                                (editor/configure! session)))
+                       (.then (fn []
                                 (textarea/sync! session dummy
-                         (fn []
-                           (when-let [grid (.querySelector js/document ".neovim__grid")]
-                             (.setAttribute grid "aria-label" (str label " — Neovim"))
-                             (.focus grid))
-                           (send! #js {:op "ready" :minimumHeight (minimum-height)})) fail!)))
+                                  (fn []
+                                    (-> (editor/start-mode! session (textarea/text dummy))
+                                        (.then (fn []
+                                                 (when-let [grid (.querySelector js/document ".neovim__grid")]
+                                                   (.setAttribute grid "aria-label" (str label " — Neovim"))
+                                                   (.focus grid))
+                                                 (send! #js {:op "ready" :minimumHeight (minimum-height)})))))
+                                  fail!)))
                        (.then #(reset! *sync %))
                        (.catch fail!)))]
       (reset! *revision (or (.-revision message) 0))

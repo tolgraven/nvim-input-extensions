@@ -78,6 +78,15 @@ priority via the existing revision owner. Component restart retains the live
 dummy contents instead of reapplying the older saved draft. Only explicit native
 writes persist edits.
 
+After saved-draft recovery and textarea synchronization, the frame chooses insert
+mode for empty contents and normal mode otherwise. Subsequent application writes
+do not reset the user's mode. The extension's packaged `editor.lua` applies native
+presentation settings after the pinned profile loads: airline's filename section
+keeps both ends within a display-width budget, and its filetype section is empty.
+The actual buffer filetype remains available to plugins. Native wheel mappings
+target the window under the pointer, retain the editing mode, and stop downward
+scrolling when the final line is visible. Upward scrolling remains available.
+
 Plain textareas are considered on focus, including dynamically added controls and
 permitted HTTP(S) frames. Hidden, disabled, readonly, contenteditable and known
 CodeMirror, Monaco, Ace, TinyMCE, CKEditor, Quill, ProseMirror, Slate and Lexical

@@ -1,4 +1,5 @@
 const fields=['plain','flex-sized'].map(id=>document.getElementById(id));
+if(new URL(location.href).searchParams.has('empty')) fields[0].value='';
 if(new URL(location.href).searchParams.has('short')) {
   Object.assign(fields[0].style,{height:'3rem',minHeight:'0',maxHeight:'3rem'});
   fields[0].rows=2;

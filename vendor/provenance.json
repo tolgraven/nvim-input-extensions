@@ -38,6 +38,7 @@
     "Mirror the active ordinary file buffer on enter, line changes and reload; exclude special search buffers.",
     "Wait for the merged write-watcher readiness contract before completing shared-file initialization.",
     "Read and persist the absolute BufWritePost target (including :w another-name.txt), which can differ from the current buffer name.",
-    "Stable per-site URL/textarea initial filenames; restore explicitly saved drafts through the native input bridge while preserving unsaved edits on component restart."
+    "Stable per-site URL/textarea initial filenames; restore explicitly saved drafts through the native input bridge while preserving unsaved edits on component restart.",
+    "Choose insert mode for empty synchronized startup contents and normal mode otherwise; packaged editor.lua supplies middle-truncated airline filenames, hides its filetype section and caps downward mouse-wheel scrolling at EOF."
   ]
 }

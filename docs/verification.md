@@ -1,5 +1,35 @@
 # Verification
 
+## Version 0.1.4: startup mode, airline and mouse scrolling
+
+All release targets, unit tests and the browser fixture compiled with zero
+warnings through the required 1.5-CPU Docker launcher. Six CLJS tests / 34
+assertions, transport checks, artifact checks and Chrome packaging passed.
+
+Private Chrome's real-WASM editor checks passed for insert/normal startup modes,
+middle-truncated filenames at 100, 60 and 40 columns, Unicode display-width
+handling, and the hidden airline filetype section with the actual filetype still
+set to text. Native wheel input reached EOF without overscrolling, retained
+insert/normal mode, scrolled upward again, and kept short buffers at the top.
+
+All thirteen textarea integration checks passed, including an empty textarea
+accepting its first key directly in insert mode, nonempty normal-mode startup,
+controlled fields, exact file persistence, completion/Meta, layout, disposal,
+restart and saved-draft recovery. Both compact-layout checks passed: eight fitted
+native rows, matching bounds, no extra title/tabline, floating labelled controls
+and restoration of the original height constraints.
+
+The installed extension was reloaded to 0.1.4, enabled from this checkout's
+`dist/chrome`, retaining Allow in Incognito. On the private native fixture
+`/native.html?empty&short&test=014`, the empty field displayed INSERT and the
+middle-truncated URL/field filename without the filetype label. Typing X without
+an insert command updated the actual textarea, and the real form submitted X.
+Downward wheel input left that short buffer visible at the top.
+The second, nonempty field opened in NORMAL. After plain `:w` saved X, reloading
+the page supplied an empty server field again; focusing it restored X and opened
+in NORMAL, confirming that saved contents take precedence in mode selection.
+The updated extension was left installed and enabled for user testing.
+
 ## Version 0.1.3: merged upstream component
 
 The imported component now tracks PR #173's merge commit,

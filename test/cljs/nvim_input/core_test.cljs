@@ -1,6 +1,7 @@
 (ns nvim-input.core-test
   (:require [cljs.test :refer [deftest is testing async]]
             [nvim-input.config :as config]
+            [nvim-input.editor :as editor]
             [nvim-input.textarea :as textarea]
             [nvim-input.virtual-files :as virtual-files]
             ["jsdom" :refer [JSDOM]]))
@@ -14,6 +15,11 @@
     (set! js/global.InputEvent (.-InputEvent window))
     (set! js/global.Event (.-Event window))
     (.-document window)))
+
+(deftest initial-editor-mode
+  (is (= :insert (editor/initial-mode "")))
+  (is (= :normal (editor/initial-mode "text")))
+  (is (= :normal (editor/initial-mode " \n"))))
 
 (deftest hostname-blacklist
   (is (config/blocked? ["example.com"] "sub.example.com"))

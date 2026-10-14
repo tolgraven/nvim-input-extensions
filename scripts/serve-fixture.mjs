@@ -11,6 +11,7 @@ http.createServer(async (request,response) => {
   else if (file === '/editor.html') file='/dist/chrome/editor.html';
   else if (file.startsWith('/js/')) file='/dist/chrome'+file;
   else if (file === '/editor.css') file='/dist/chrome/editor.css';
+  else if (file === '/editor.lua') file='/dist/chrome/editor.lua';
   else if (file === '/native.html') file='/test/fixture/native.html';
   else if (file === '/native.js') file='/test/fixture/native.js';
   else if (file === '/checks.js') file='/test/fixture/checks.js';
