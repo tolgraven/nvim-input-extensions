@@ -31,7 +31,7 @@
   "upstream-pr": "https://github.com/tolgraven/tolgrAVen/pull/173",
   "upstream-status": "Merged PR #173 on 2026-10-14; pinned to its merge commit, retaining the documented extension adapters.",
   "extension-adaptations": [
-    "Inline measured textarea bounds and optional fit-height grid rows, with a six-editing-line minimum.",
+    "Inline measured textarea bounds and optional fit-height grid rows, with a six-editing-line minimum including border/padding; inset grid and outer focus border keep the first row and caret clear.",
     "Optional mode-toolbar hiding and accessible floating restart/restore controls without extra rows.",
     "Disable airline tabline; use /workspace/files for native filename completion and Meta project search.",
     "Persist explicit writes in Chrome local storage; materialize shared files in each native filesystem and refresh file reads.",
@@ -39,6 +39,6 @@
     "Wait for the merged write-watcher readiness contract before completing shared-file initialization.",
     "Read and persist the absolute BufWritePost target (including :w another-name.txt), which can differ from the current buffer name.",
     "Stable per-site URL/textarea initial filenames; restore explicitly saved drafts through the native input bridge while preserving unsaved edits on component restart.",
-    "Choose insert mode for empty synchronized startup contents and normal mode otherwise; packaged editor.lua supplies middle-truncated airline filenames, hides its filetype section and caps downward mouse-wheel scrolling at EOF."
+    "Choose insert mode for empty synchronized startup contents and normal mode otherwise; packaged editor.lua assigns insert carets the native Cursor highlight, supplies middle-truncated airline filenames, hides its filetype section and caps downward mouse-wheel scrolling at EOF."
   ]
 }

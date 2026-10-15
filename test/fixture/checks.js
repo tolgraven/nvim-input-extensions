@@ -155,7 +155,7 @@ document.querySelector('#run-layout-checks').addEventListener('click',async()=>{
   output.textContent='Running…';
   try {
     document.querySelector('#sizing pre').style.height='3rem';
-    for(const id of ['plain','flex-sized']) {
+    for(const id of ['plain','empty','flex-sized']) {
       const field=document.getElementById(id),parent=field.parentElement;
       Object.assign(field.style,{height:'3rem',minHeight:'0',maxHeight:'3rem'});
       const originals=[field.style.cssText,parent.style.cssText];
@@ -165,6 +165,35 @@ document.querySelector('#run-layout-checks').addEventListener('click',async()=>{
       const grid=doc.querySelector('.neovim__grid'),viewport=doc.querySelector('.neovim__viewport');
       await wait(()=>grid.children.length>=8 && grid.getBoundingClientRect().height<=viewport.clientHeight+1,id+' eight fitted rows');
       await wait(()=>grid.firstElementChild?.textContent.includes(field.value.split('\n')[0]),id+' first editing row without native tabline');
+      const clearance=()=>{
+        const box=doc.querySelector('.neovim').getBoundingClientRect();
+        const first=grid.firstElementChild.getBoundingClientRect(),last=grid.lastElementChild.getBoundingClientRect();
+        const cursorElement=doc.querySelector('.neovim__cursor'),cursor=cursorElement.getBoundingClientRect();
+        const inset=parseFloat(doc.defaultView.getComputedStyle(doc.documentElement).fontSize)/4;
+        if(first.top-box.top<inset || box.bottom-last.bottom<inset || cursor.top<first.top-.1 || cursor.bottom>last.bottom+.1 || cursor.left<box.left+inset || cursor.right>box.right-inset)
+          throw Error(id+' grid/caret lacks border clearance: '+JSON.stringify({top:first.top-box.top,bottom:box.bottom-last.bottom,cursorTop:cursor.top-first.top,scrollTop:viewport.scrollTop}));
+        if(doc.defaultView.getComputedStyle(grid).outlineStyle!=='none')throw Error('Grid focus outline crosses its text/caret');
+        if(cursorElement.classList.contains('neovim__cursor--vertical')) {
+          const caret=doc.defaultView.getComputedStyle(cursorElement,'::after');
+          if(parseFloat(caret.height)>cursor.height+.1 || parseFloat(caret.bottom)!==0 || parseFloat(caret.width)<=0)throw Error('Insert caret exceeds its cell or has no width');
+          const luminance=color=>{
+            const rgb=color.match(/[\d.]+/g).slice(0,3).map(n=>Number(n)/255).map(n=>n<=.04045?n/12.92:((n+.055)/1.055)**2.4);
+            return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722;
+          };
+          const background=doc.defaultView.getComputedStyle(cursorElement).backgroundColor;
+          const a=luminance(caret.backgroundColor),b=luminance(background);
+          const contrast=(Math.max(a,b)+.05)/(Math.min(a,b)+.05);
+          if(contrast<3)throw Error('Insert caret is indistinct: '+caret.backgroundColor+' against '+background+' (contrast '+contrast.toFixed(2)+')');
+        }
+      };
+      const key=value=>grid.dispatchEvent(new KeyboardEvent('keydown',{key:value,bubbles:true,cancelable:true}));
+      grid.focus();
+      key('Escape');
+      await wait(()=>grid.textContent.includes('NORMAL'),id+' normal caret');
+      clearance();
+      key('i');
+      await wait(()=>grid.textContent.includes('INSERT'),id+' insert caret');
+      clearance();
       const native=field.getBoundingClientRect(),bounds=frame.getBoundingClientRect();
       if(!['x','y','width','height'].every(key=>Math.abs(native[key]-bounds[key])<1))throw Error(id+' mismatched bounds');
       if(doc.querySelector('.neovim__toolbar'))throw Error('Extra mode title remains');
@@ -176,7 +205,7 @@ document.querySelector('#run-layout-checks').addEventListener('click',async()=>{
       doc.querySelector('.neovim__restore').click();
       await wait(()=>!field.nextElementSibling?.matches('iframe'),id+' restore');
       if(field.style.cssText!==originals[0] || parent.style.cssText!==originals[1])throw Error(id+' did not restore height constraints');
-      checks.push(`${id}: PASS — eight fitted native rows, matching bounds, no title, floating icons, original height constraints restored`);
+      checks.push(`${id}: PASS — eight fitted rows, inset first/last rows, contained normal/insert carets, matching bounds, no title, floating icons, original height constraints restored`);
       output.textContent=checks.join('\n');
     }
   } catch(error){output.textContent=checks.join('\n')+'\nFAIL: '+error.message;}

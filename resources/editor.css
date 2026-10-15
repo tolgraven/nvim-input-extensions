@@ -2,7 +2,7 @@
 @font-face { font-family: "Neovim Icons"; src: url("/vendor/neovim/icons.woff2") format("woff2"); font-display: swap; unicode-range: U+E000-F8FF, U+F0000-FFFFD; }
 .neovim-page { max-width: 80rem; margin-inline: auto; }
 .neovim-container { margin-block: 1rem; }
-.neovim { border: .0625rem solid #2a3346; border-radius: .5rem; overflow: hidden; background: #050912; color: #dfe5f1; }
+.neovim { box-sizing: border-box; padding: .25rem; border: .0625rem solid #2a3346; border-radius: .5rem; overflow: hidden; background: #050912; color: #dfe5f1; }
 .neovim__toolbar { display: flex; justify-content: space-between; align-items: center; padding: .5rem 1rem; border-bottom: .0625rem solid #2a3346; }
 .neovim__command-error { margin: .75rem 1rem; color: #ffb6b6; }
 .neovim__viewport { position: relative; width: 100%; overflow: auto; }
@@ -11,7 +11,7 @@
 .neovim__grid { margin: 0; width: max-content; min-width: 100%; outline: none; white-space: pre; }
 .neovim__grid--loading { visibility: hidden; }
 .neovim__grid--mouse { user-select: none; touch-action: none; }
-.neovim__grid:focus-visible { outline: .125rem solid #5ad1ff; outline-offset: -.125rem; }
+.neovim:focus-within { border-color: #5ad1ff; }
 .neovim__row { display: flex; height: 1.35em; }
 .neovim__cell { display: inline-block; flex: 0 0 1ch; width: 1ch; }
 .neovim__cursor { position: relative; }

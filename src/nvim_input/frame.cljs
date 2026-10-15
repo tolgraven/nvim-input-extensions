@@ -33,6 +33,8 @@
         editor (.querySelector js/document ".neovim")
         style (.getComputedStyle js/window editor)]
     (js/Math.ceil (+ (* runtime/min-fit-rows (.-height (.getBoundingClientRect probe)))
+                     (js/parseFloat (.-paddingTop style))
+                     (js/parseFloat (.-paddingBottom style))
                      (js/parseFloat (.-borderTopWidth style))
                      (js/parseFloat (.-borderBottomWidth style))))))
 

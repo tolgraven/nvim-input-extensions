@@ -1,6 +1,10 @@
 -- Inline-editor settings applied after the pinned native profile is loaded.
 NvimInput = {}
 
+-- Empty-line NonText is intentionally dim. Use the native Cursor highlight
+-- for the insert bar instead of inheriting the glyph underneath it.
+vim.opt.guicursor:append('i-ci-ve:ver25-Cursor')
+
 function NvimInput.middle(text, width)
   if vim.fn.strdisplaywidth(text) <= width then return text end
   local head = math.ceil((width - 3) / 2)

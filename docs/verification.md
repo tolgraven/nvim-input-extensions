@@ -1,5 +1,40 @@
 # Verification
 
+## Version 0.1.5: first-line and caret border clearance
+
+The reported Stack Overflow screenshot showed the insert caret intersecting the
+blue focus outline at the top of the grid. The private fixture reproduced a
+one-pixel first-row inset, zero viewport scroll offset and only 1.8125 pixels
+below the final row. The old focus outline was drawn inward over that grid.
+
+The editor now has a quarter-rem inset, and focus colours its outer border
+instead. The measured minimum height includes both vertical padding and borders,
+preserving six editing lines plus the native status and command rows.
+
+The installed private test exposed a second issue on empty lines: insert mode
+inherited NonText's dim foreground for its caret. The rendered colours were
+rgb(45,48,48) against rgb(42,41,43), only 1.09:1 contrast. The extension now gives
+insert mode the profile's native Cursor highlight. The browser regression also
+requires a visible caret width and at least 3:1 contrast against its cell.
+
+All release targets, unit tests and the browser fixture compiled without warnings
+through the required 1.5-CPU Docker launcher. Six CLJS tests / 34 assertions,
+transport checks and artifact checks passed.
+
+In private Chrome at 100% zoom, the expanded layout checks passed for ordinary,
+empty and absolute flex fields. Each check verified first/last-row clearance,
+normal and insert caret containment, absence of a grid outline, eight fitted
+rows, matching frame/native bounds, hidden headers, floating controls and exact
+restoration of the original size constraints. The final run also passed the
+insert-caret contrast check on the initially empty field.
+
+Chrome was reloaded with the final 0.1.5 assets, enabled from this checkout's
+`dist/chrome` with Allow in Incognito retained. On the installed private native
+page `/native.html?empty&short&test=015`, the focused empty field showed a bright
+vertical insert bar entirely below the outer focus border, with six editing
+lines, hidden extra headers and floating controls. The extension was left loaded
+for user testing.
+
 ## Version 0.1.4: startup mode, airline and mouse scrolling
 
 All release targets, unit tests and the browser fixture compiled with zero

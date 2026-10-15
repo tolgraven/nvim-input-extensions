@@ -13,8 +13,11 @@ reconciliation following site layout changes. This also handles an absolute
 textarea backed by a hidden sizing element in a flex row, as on Stack Overflow.
 The extension's fit-height component option sizes native Neovim rows to the
 remaining viewport height. Short fields get a measured minimum of eight native
-rows: six editing lines, a status line and a command line. The retained textarea
-and, for absolute fields, its containing sizing row reserve that space in page
+rows: six editing lines, a status line and a command line. The measured minimum
+also includes the editor's padding and border. The grid is inset inside
+that border; focus changes the outer border colour, so an inward grid outline
+cannot cross the first row or its caret. The retained textarea and, for absolute
+fields, its containing sizing row reserve that space in page
 layout. Original height constraints are restored on unmount. The extra Reagent
 mode toolbar is hidden; restart and restore are accessible icons floating over
 the right edge on hover, consuming no grid rows. These are extension adaptations
@@ -83,7 +86,9 @@ mode for empty contents and normal mode otherwise. Subsequent application writes
 do not reset the user's mode. The extension's packaged `editor.lua` applies native
 presentation settings after the pinned profile loads: airline's filename section
 keeps both ends within a display-width budget, and its filetype section is empty.
-The actual buffer filetype remains available to plugins. Native wheel mappings
+Insert mode uses the native Cursor highlight, so dim end-of-line markers cannot
+make an empty field's caret invisible. The actual buffer filetype remains
+available to plugins. Native wheel mappings
 target the window under the pointer, retain the editing mode, and stop downward
 scrolling when the final line is visible. Upward scrolling remains available.
 
